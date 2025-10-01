@@ -25,16 +25,16 @@ class Ui_MainWindow(object):
 "}\n"
 "\n"
 "QSlider::handle:horizontal {\n"
-"    background-color: #1193d4; /* Blue knob */\n"
+"    background-color: #1193d4;\n"
 "    border: 0px solid #1193d4;\n"
-"    width: 18px; /* Knob width */\n"
-"    height: 18px; /* Knob height */\n"
-"    border-radius: 9px; /* Make it a perfect circle */\n"
-"    margin: -5px 0px; /* Center the knob on the groove */\n"
+"    width: 18px;\n"
+"    height: 18px;\n"
+"    border-radius: 9px;\n"
+"    margin: -5px 0px;\n"
 "}\n"
 "\n"
 "QSlider::handle:horizontal:hover {\n"
-"    background-color: #15a4e5; /* Lighter blue on hover */\n"
+"    background-color: #15a4e5;\n"
 "}")
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
