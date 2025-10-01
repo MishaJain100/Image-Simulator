@@ -9,7 +9,8 @@
 
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
+from HistogramWidget import HistogramWidget
+import numpy as np
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
@@ -374,6 +375,63 @@ class Ui_MainWindow(object):
         self.verticalLayout_11.addWidget(self.TopResults)
         self.Histograms = QtWidgets.QWidget(self.ResultsWidget)
         self.Histograms.setObjectName("Histograms")
+        self.verticalLayout_12 = QtWidgets.QVBoxLayout(self.Histograms)
+        self.verticalLayout_12.setObjectName("verticalLayout_12")
+        self.ImageAnalysis = QtWidgets.QLabel(self.Histograms)
+        self.ImageAnalysis.setStyleSheet("color: #ffffff;\n"
+"font-size: 18px;\n"
+"font-weight: 600;\n"
+"border: None;")
+        self.ImageAnalysis.setFont(space_grotesk)
+        self.ImageAnalysis.setObjectName("ImageAnalysis")
+        self.verticalLayout_12.addWidget(self.ImageAnalysis)
+        sample_data1 = np.random.normal(loc=128, scale=50, size=10000)
+        sample_data2 = np.random.normal(loc=128, scale=50, size=10000)
+        hist_values1, _ = np.histogram(sample_data1, bins=256, range=(0, 255))
+        hist_values2, _ = np.histogram(sample_data2, bins=256, range=(0, 255))
+        self.RealHistogramWidget = QtWidgets.QWidget(self.Histograms)
+        self.RealHistogramWidget.setStyleSheet("background-color: rgb(15, 23, 42);\n"
+"border: 1px solid rgb(30, 41, 59);\n"
+"border-radius: 8px;")
+        self.RealHistogramWidget.setObjectName("RealHistogramWidget")
+        self.verticalLayout_13 = QtWidgets.QVBoxLayout(self.RealHistogramWidget)
+        self.verticalLayout_13.setContentsMargins(5, 5, 5, 5)
+        self.verticalLayout_13.setSpacing(0)
+        self.verticalLayout_13.setObjectName("verticalLayout_13")
+        self.RealHistogram = HistogramWidget(self.RealHistogramWidget)
+        self.RealHistogram.setObjectName("RealHistogram")
+        self.RealHistogram.setTitle("Real Image")
+        self.RealHistogram.setTitleFont(space_grotesk)
+        self.RealHistogram.setTitleStyleSheet("color: #ffffff;\n"
+"font-size: 14px;\n"
+"font-weight: 600;\n"
+"border: None;")
+        self.RealHistogram.setData(hist_values1)
+        self.verticalLayout_13.addWidget(self.RealHistogram)
+        self.verticalLayout_12.addWidget(self.RealHistogramWidget)
+        self.SimulatedHistogramWidget = QtWidgets.QWidget(self.Histograms)
+        self.SimulatedHistogramWidget.setStyleSheet("background-color: rgb(15, 23, 42);\n"
+"border: 1px solid rgb(30, 41, 59);\n"
+"border-radius: 8px;")
+        self.SimulatedHistogramWidget.setObjectName("SimulatedHistogramWidget")
+        self.verticalLayout_15 = QtWidgets.QVBoxLayout(self.SimulatedHistogramWidget)
+        self.verticalLayout_15.setContentsMargins(5, 5, 5, 5)
+        self.verticalLayout_15.setSpacing(0)
+        self.verticalLayout_15.setObjectName("verticalLayout_15")
+        self.SimulatedHistogram = HistogramWidget(self.SimulatedHistogramWidget)
+        self.verticalLayout_15.addWidget(self.SimulatedHistogram)
+        self.verticalLayout_12.addWidget(self.SimulatedHistogramWidget)
+        self.SimulatedHistogram.setObjectName("SimulatedHistogram")
+        self.SimulatedHistogram.setTitle("Simulated Image")
+        self.SimulatedHistogram.setTitleFont(space_grotesk)
+        self.SimulatedHistogram.setTitleStyleSheet("color: #ffffff;\n"
+"font-size: 14px;\n"
+"font-weight: 600;\n"
+"border: None;")
+        self.SimulatedHistogram.setData(hist_values2)
+        self.verticalLayout_12.setStretch(0, 1)
+        self.verticalLayout_12.setStretch(1, 10)
+        self.verticalLayout_12.setStretch(2, 10)
         self.verticalLayout_11.addWidget(self.Histograms)
         self.verticalLayout_11.setStretch(0, 44)
         self.verticalLayout_11.setStretch(1, 83)
@@ -409,6 +467,7 @@ class Ui_MainWindow(object):
         self.PSNRLabel.setText(_translate("MainWindow", "PSNR"))
         self.PSNRValue.setText(_translate("MainWindow", "0.0 dB"))
         self.MapLabel.setText(_translate("MainWindow", "Difference Image Map"))
+        self.ImageAnalysis.setText(_translate("MainWindow", "Image Analysis"))
 import resources_rc
 
 
