@@ -13,6 +13,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
+        space_grotesk = QtGui.QFont(QtGui.QFontDatabase.applicationFontFamilies(QtGui.QFontDatabase.addApplicationFont(":/fonts/resources/fonts/SpaceGrotesk.ttf"))[0])
+
         MainWindow.setObjectName("MainWindow")
         MainWindow.resize(1400, 1000)
         MainWindow.setStyleSheet("QSlider::groove:horizontal {\n"
@@ -73,9 +75,9 @@ class Ui_MainWindow(object):
         self.ImageSimulatorText = QtWidgets.QLabel(self.ImageSimulator)
         self.ImageSimulatorText.setEnabled(False)
         self.ImageSimulatorText.setStyleSheet("color: white;\n"
-"font-family: SpaceGrotesk;\n"
 "font-weight: bold;\n"
 "font-size: 28px;")
+        self.ImageSimulatorText.setFont(space_grotesk)
         self.ImageSimulatorText.setScaledContents(True)
         self.ImageSimulatorText.setObjectName("ImageSimulatorText")
         self.horizontalLayout_2.addWidget(self.ImageSimulatorText)
@@ -105,16 +107,16 @@ class Ui_MainWindow(object):
 "font-weight: 500;\n"
 "font-size: 14px;\n"
 "line-height: 20px;\n"
-"margin: 0;\n"
-"font-family: SpaceGrotesk")
+"margin: 0;\n")
+        self.UploadButton.setFont(space_grotesk)
         self.UploadButton.setObjectName("UploadButton")
         self.verticalLayout_2.addWidget(self.UploadButton)
         self.ConstraintsText = QtWidgets.QPushButton(self.UploadWidget)
         self.ConstraintsText.setStyleSheet("border: None;\n"
 "color: rgb(156, 163, 175);\n"
 "font-size: 12px;\n"
-"margin: 0;\n"
-"font-family: SpaceGrotesk")
+"margin: 0;\n")
+        self.ConstraintsText.setFont(space_grotesk)
         self.ConstraintsText.setObjectName("ConstraintsText")
         self.verticalLayout_2.addWidget(self.ConstraintsText)
         self.verticalLayout.addWidget(self.UploadWidget)
@@ -125,9 +127,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_3.setSpacing(15)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
         self.ParametersLabel = QtWidgets.QLabel(self.Parameters)
-        self.ParametersLabel.setStyleSheet("font-family: SpaceGrotesk;\n"
-"color: #9ca3af;\n"
+        self.ParametersLabel.setStyleSheet("color: #9ca3af;\n"
 "font-size: 14px;")
+        self.ParametersLabel.setFont(space_grotesk)
         self.ParametersLabel.setObjectName("ParametersLabel")
         self.verticalLayout_3.addWidget(self.ParametersLabel)
         self.Zoom = QtWidgets.QWidget(self.Parameters)
@@ -138,9 +140,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_4.setSpacing(8)
         self.verticalLayout_4.setObjectName("verticalLayout_4")
         self.ZoomLabel = QtWidgets.QLabel(self.Zoom)
-        self.ZoomLabel.setStyleSheet("font-family: SpaceGrotesk;\n"
-"font-size: 14px;\n"
+        self.ZoomLabel.setStyleSheet("font-size: 14px;\n"
 "color: #e5e7eb;")
+        self.ZoomLabel.setFont(space_grotesk)
         self.ZoomLabel.setObjectName("ZoomLabel")
         self.verticalLayout_4.addWidget(self.ZoomLabel)
         self.ZoomSliderPart = QtWidgets.QWidget(self.Zoom)
@@ -170,9 +172,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_5.setSpacing(8)
         self.verticalLayout_5.setObjectName("verticalLayout_5")
         self.FOVLabel = QtWidgets.QLabel(self.FOV)
-        self.FOVLabel.setStyleSheet("font-family: SpaceGrotesk;\n"
-"font-size: 14px;\n"
+        self.FOVLabel.setStyleSheet("font-size: 14px;\n"
 "color: #e5e7eb;")
+        self.FOVLabel.setFont(space_grotesk)
         self.FOVLabel.setObjectName("FOVLabel")
         self.verticalLayout_5.addWidget(self.FOVLabel)
         self.FOVSliderPart = QtWidgets.QWidget(self.FOV)
@@ -202,9 +204,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_6.setSpacing(8)
         self.verticalLayout_6.setObjectName("verticalLayout_6")
         self.DistortionLabel = QtWidgets.QLabel(self.Distortion)
-        self.DistortionLabel.setStyleSheet("font-family: SpaceGrotesk;\n"
-"font-size: 14px;\n"
+        self.DistortionLabel.setStyleSheet("font-size: 14px;\n"
 "color: #e5e7eb;")
+        self.DistortionLabel.setFont(space_grotesk)
         self.DistortionLabel.setObjectName("DistortionLabel")
         self.verticalLayout_6.addWidget(self.DistortionLabel)
         self.DistortionSliderPart = QtWidgets.QWidget(self.Distortion)
@@ -234,9 +236,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_11.setSpacing(8)
         self.verticalLayout_11.setObjectName("verticalLayout_11")
         self.BrightnessLabel = QtWidgets.QLabel(self.Brightness)
-        self.BrightnessLabel.setStyleSheet("font-family: SpaceGrotesk;\n"
-"font-size: 14px;\n"
+        self.BrightnessLabel.setStyleSheet("font-size: 14px;\n"
 "color: #e5e7eb;")
+        self.BrightnessLabel.setFont(space_grotesk)
         self.BrightnessLabel.setObjectName("BrightnessLabel")
         self.verticalLayout_11.addWidget(self.BrightnessLabel)
         self.BrightnessSliderPart = QtWidgets.QWidget(self.Brightness)
@@ -266,9 +268,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_7.setSpacing(8)
         self.verticalLayout_7.setObjectName("verticalLayout_7")
         self.LDLabel = QtWidgets.QLabel(self.LD)
-        self.LDLabel.setStyleSheet("font-family: SpaceGrotesk;\n"
-"font-size: 14px;\n"
+        self.LDLabel.setStyleSheet("font-size: 14px;\n"
 "color: #e5e7eb;")
+        self.LDLabel.setFont(space_grotesk)
         self.LDLabel.setObjectName("LDLabel")
         self.verticalLayout_7.addWidget(self.LDLabel)
         self.LDSliderPart = QtWidgets.QWidget(self.LD)
@@ -298,9 +300,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_8.setSpacing(8)
         self.verticalLayout_8.setObjectName("verticalLayout_8")
         self.ShadowsLabel = QtWidgets.QLabel(self.Shadows)
-        self.ShadowsLabel.setStyleSheet("font-family: SpaceGrotesk;\n"
-"font-size: 14px;\n"
+        self.ShadowsLabel.setStyleSheet("font-size: 14px;\n"
 "color: #e5e7eb;")
+        self.ShadowsLabel.setFont(space_grotesk)
         self.ShadowsLabel.setObjectName("ShadowsLabel")
         self.verticalLayout_8.addWidget(self.ShadowsLabel)
         self.ShadowsSliderPart = QtWidgets.QWidget(self.Shadows)
@@ -330,9 +332,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_12.setSpacing(8)
         self.verticalLayout_12.setObjectName("verticalLayout_12")
         self.NoiseLabel = QtWidgets.QLabel(self.Noise)
-        self.NoiseLabel.setStyleSheet("font-family: SpaceGrotesk;\n"
-"font-size: 14px;\n"
+        self.NoiseLabel.setStyleSheet("font-size: 14px;\n"
 "color: #e5e7eb;")
+        self.NoiseLabel.setFont(space_grotesk)
         self.NoiseLabel.setObjectName("NoiseLabel")
         self.verticalLayout_12.addWidget(self.NoiseLabel)
         self.NoiseSliderPart = QtWidgets.QWidget(self.Noise)
@@ -362,9 +364,9 @@ class Ui_MainWindow(object):
         self.verticalLayout_9.setSpacing(8)
         self.verticalLayout_9.setObjectName("verticalLayout_9")
         self.ExposureLabel = QtWidgets.QLabel(self.Exposure)
-        self.ExposureLabel.setStyleSheet("font-family: SpaceGrotesk;\n"
-"font-size: 14px;\n"
+        self.ExposureLabel.setStyleSheet("font-size: 14px;\n"
 "color: #e5e7eb;")
+        self.ExposureLabel.setFont(space_grotesk)
         self.ExposureLabel.setObjectName("ExposureLabel")
         self.verticalLayout_9.addWidget(self.ExposureLabel)
         self.ExposureSliderPart = QtWidgets.QWidget(self.Exposure)
@@ -394,19 +396,19 @@ class Ui_MainWindow(object):
         self.verticalLayout_10.setSpacing(8)
         self.verticalLayout_10.setObjectName("verticalLayout_10")
         self.ResolutionLabel = QtWidgets.QLabel(self.Resolution)
-        self.ResolutionLabel.setStyleSheet("font-family: SpaceGrotesk;\n"
-"font-size: 14px;\n"
+        self.ResolutionLabel.setStyleSheet("font-size: 14px;\n"
 "color: #e5e7eb;")
+        self.ResolutionLabel.setFont(space_grotesk)
         self.ResolutionLabel.setObjectName("ResolutionLabel")
         self.verticalLayout_10.addWidget(self.ResolutionLabel)
         self.ResolutionDropDown = QtWidgets.QComboBox(self.Resolution)
-        self.ResolutionDropDown.setStyleSheet("font-family: SpaceGrotesk;\n"
-"color: #e5e7eb;\n"
+        self.ResolutionDropDown.setStyleSheet("color: #e5e7eb;\n"
 "font-size: 14px;\n"
 "background-color: #1f2937;\n"
 "padding: 8px 40px 8px 12px;\n"
 "border-color: rgb(55 65 81);\n"
 "border-radius: 4px")
+        self.ResolutionDropDown.setFont(space_grotesk)
         self.ResolutionDropDown.setObjectName("ResolutionDropDown")
         self.ResolutionDropDown.addItem("")
         self.ResolutionDropDown.addItem("")
@@ -424,7 +426,6 @@ class Ui_MainWindow(object):
 "    background-color: #0f3345;\n"
 "    color: #1193d4;\n"
 "    font-size: 14px;\n"
-"    font-family: SpaceGrotesk;\n"
 "    padding: 8px 0px;\n"
 "    border-radius: 4px;\n"
 "    border: none;\n"
@@ -439,6 +440,7 @@ class Ui_MainWindow(object):
 "    padding-top: 9px;\n"
 "    padding-left: 1px;\n"
 "}")
+        self.Reset.setFont(space_grotesk)
         icon2 = QtGui.QIcon()
         icon2.addPixmap(QtGui.QPixmap(":/icons/resources/icons/settings_backup_restore.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.Reset.setIcon(icon2)
@@ -449,7 +451,6 @@ class Ui_MainWindow(object):
 "    background-color: #1193d4;\n"
 "    color: #ffffff;\n"
 "    font-size: 14px;\n"
-"    font-family: SpaceGrotesk;\n"
 "    padding: 8px 0px;\n"
 "    border-radius: 4px;\n"
 "    border: none;\n"
@@ -464,6 +465,7 @@ class Ui_MainWindow(object):
 "    padding-top: 9px;\n"
 "    padding-left: 1px;\n"
 "}")
+        self.Apply.setFont(space_grotesk)
         icon3 = QtGui.QIcon()
         icon3.addPixmap(QtGui.QPixmap(":/icons/resources/icons/check.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.Apply.setIcon(icon3)
@@ -492,10 +494,10 @@ class Ui_MainWindow(object):
         self.horizontalLayout_9.setObjectName("horizontalLayout_9")
         self.CameraOpticsSimulation = QtWidgets.QLabel(self.TopRibbon)
         self.CameraOpticsSimulation.setStyleSheet("color: white;\n"
-"font-family: SpaceGrotesk;\n"
 "font-weight: 700;\n"
 "font-size: 20px;\n"
 "border: None;")
+        self.CameraOpticsSimulation.setFont(space_grotesk)
         self.CameraOpticsSimulation.setObjectName("CameraOpticsSimulation")
         self.horizontalLayout_9.addWidget(self.CameraOpticsSimulation)
         self.ToprightButtons = QtWidgets.QWidget(self.TopRibbon)
@@ -548,9 +550,9 @@ class Ui_MainWindow(object):
         self.OriginalImage = QtWidgets.QLabel(self.OriginalWidget)
         self.OriginalImage.setStyleSheet("border: None;\n"
 "color: white;\n"
-"font-family: SpaceGrotesk;\n"
 "font-size: 18px;\n"
 "font-weight: 600;")
+        self.OriginalImage.setFont(space_grotesk)
         self.OriginalImage.setObjectName("OriginalImage")
         self.verticalLayout_15.addWidget(self.OriginalImage)
         self.OriginalDefault = QtWidgets.QLabel(self.OriginalWidget)
@@ -576,9 +578,9 @@ class Ui_MainWindow(object):
         self.SimulatedImage = QtWidgets.QLabel(self.SimulatedWidget)
         self.SimulatedImage.setStyleSheet("border: None;\n"
 "color: white;\n"
-"font-family: SpaceGrotesk;\n"
 "font-size: 18px;\n"
 "font-weight: 600;")
+        self.SimulatedImage.setFont(space_grotesk)
         self.SimulatedImage.setObjectName("SimulatedImage")
         self.verticalLayout_16.addWidget(self.SimulatedImage)
         self.SimulatedDefault = QtWidgets.QLabel(self.SimulatedWidget)

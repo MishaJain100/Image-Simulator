@@ -1,8 +1,5 @@
 venv
 __pycache__
-fonts
-*.html
-Simulator Control Panel.ui
+HTML
 resources.qrc
-resources
-*.ui
+*ui
