@@ -17,7 +17,7 @@ class Ui_MainWindow(object):
         space_grotesk = QtGui.QFont(QtGui.QFontDatabase.applicationFontFamilies(QtGui.QFontDatabase.addApplicationFont(":/fonts/resources/fonts/SpaceGrotesk.ttf"))[0])
 
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1401, 1000)
+        MainWindow.resize(1400, 1000)
         MainWindow.setStyleSheet("QSlider::groove:horizontal {\n"
 "    background-color: #4a5568;\n"
 "    border: 0px solid #4a5568;\n"
