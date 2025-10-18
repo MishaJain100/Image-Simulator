@@ -640,6 +640,20 @@ class Ui_MainWindow(object):
         self.CameraOpticsSimulation.setText(_translate("MainWindow", "Camera Optics Simulation"))
         self.OriginalImage.setText(_translate("MainWindow", "Original Image"))
         self.SimulatedImage.setText(_translate("MainWindow", "Simulated Image"))
+
+        self.UploadIcon.clicked.connect(self.upload_image)
+        self.UploadButton.clicked.connect(self.upload_image)
+        self.ConstraintsText.clicked.connect(self.upload_image)
+
+    def upload_image(self):
+        options = QtWidgets.QFileDialog.Options()
+        file_name, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select an Image", "", "Images (*.png *.jpg *.jpeg *.svg)", options=options)
+        if file_name:
+             print(f"Selected file: {file_name}")
+        else:
+             print("No file selected.")
+
+
 import resources_rc
 
 

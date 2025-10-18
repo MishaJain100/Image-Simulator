@@ -126,9 +126,9 @@ class AppWindow(QtWidgets.QMainWindow):
         self.menu_frame.raise_()
         current_x = self.menu_frame.x()
         if current_x < 0:
-             self.menu_frame.setGeometry(-MENU_WIDTH, 0, MENU_WIDTH, self.height())
+            self.menu_frame.setGeometry(-MENU_WIDTH, 0, MENU_WIDTH, self.height())
         else:
-             self.menu_frame.setGeometry(0, 0, MENU_WIDTH, self.height())
+            self.menu_frame.setGeometry(0, 0, MENU_WIDTH, self.height())
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
