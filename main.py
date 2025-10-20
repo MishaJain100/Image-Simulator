@@ -1,10 +1,10 @@
 import sys
 from PyQt5 import QtCore, QtWidgets
-from simulator_control_panel import Ui_MainWindow as Ui_SimulatorControlPanel
-from sensor_and_noise_parameter import Ui_MainWindow as Ui_SensorAndNoiseParameter
-from distortion_presets_and_customization import Ui_MainWindow as Ui_DistortionPresetsAndCustomization
-from comparison_and_metrics_display import Ui_MainWindow as Ui_ComparisonAndMetricsDisplay
-from autotuning_and_calibration import Ui_MainWindow as Ui_AutotuningAndCalibration
+from simulator_control_panel_logic import SimulatorControlPanelLogic
+from sensor_and_noise_parameter_logic import SensorAndNoiseParameterLogic
+from distortion_presets_and_customization_logic import DistortionPresetsAndCustomizationLogic
+from comparison_and_metrics_display_logic import ComparisonAndMetricsDisplayLogic
+from autotuning_and_calibration_logic import AutotuningAndCalibrationLogic
 
 MENU_WIDTH = 250
 
@@ -31,8 +31,8 @@ class AppWindow(QtWidgets.QMainWindow):
             }
         """
         self.setStyleSheet(global_stylesheet)
-        self.ui = None
-        self._switch_ui(Ui_SimulatorControlPanel)
+        self.current_controller = None
+        self._switch_ui(SimulatorControlPanelLogic)
         self.menu_frame = QtWidgets.QFrame(self)
         self.menu_frame.setGeometry(QtCore.QRect(-MENU_WIDTH, 0, MENU_WIDTH, self.height()))
         self.menu_frame.setStyleSheet("background-color: #0f1b23; border-right: 1px solid #1e293b;")
@@ -48,11 +48,11 @@ class AppWindow(QtWidgets.QMainWindow):
         self.menu_layout.setSpacing(10)
         self.menu_layout.setAlignment(QtCore.Qt.AlignTop)
         self.menu_map = {
-            "Simulator Control Panel": Ui_SimulatorControlPanel,
-            "Sensor and Noise Parameters": Ui_SensorAndNoiseParameter,
-            "Distortion Presets and Customisation": Ui_DistortionPresetsAndCustomization,
-            "Comparison and Metrics Display": Ui_ComparisonAndMetricsDisplay,
-            "Auto-Tuning and Calibration": Ui_AutotuningAndCalibration
+            "Simulator Control Panel": SimulatorControlPanelLogic,
+            "Sensor and Noise Parameters": SensorAndNoiseParameterLogic,
+            "Distortion Presets and Customisation": DistortionPresetsAndCustomizationLogic,
+            "Comparison and Metrics Display": ComparisonAndMetricsDisplayLogic,
+            "Auto-Tuning and Calibration": AutotuningAndCalibrationLogic
         }
         menu_button_style = """
             QPushButton {
@@ -83,24 +83,36 @@ class AppWindow(QtWidgets.QMainWindow):
         if self.menu_frame.x() == 0:
             self.toggle_menu()
 
-    def _switch_ui(self, ui_class):
-        temp_window = QtWidgets.QMainWindow()
-        new_ui = ui_class()
-        new_ui.setupUi(temp_window)
-        new_central_widget = temp_window.centralWidget()
-        new_central_widget.setParent(self)
-        self.ui = new_ui
-        menu_button = new_central_widget.findChild(QtWidgets.QPushButton, "Icon")
+    def _switch_ui(self, logic_class):
+        """Creates a controller, extracts its content, and displays it."""
+
+        # 1. Create an instance of the logic class (e.g., SimulatorControlPanelLogic).
+        #    This fully builds the window in memory.
+        self.current_controller = logic_class(self)
+
+        # 2. Extract its central widget. This is the QWidget that holds all
+        #    your buttons, sliders, etc.
+        content_widget = self.current_controller.centralWidget()
+
+        # 3. Re-parent the content widget to the main AppWindow. This is a crucial
+        #    step for proper display and memory management.
+        content_widget.setParent(self)
+        
+        # 4. Now, set this extracted QWidget as the central widget of AppWindow.
+        #    This works because you're putting a widget inside a window, which is correct.
+        self.setCentralWidget(content_widget)
+
+        # The rest of the logic for finding the menu button can stay the same,
+        # but it now operates on the new central widget.
+        # Note: We access ui elements through self.current_controller.ui
+        menu_button = self.centralWidget().findChild(QtWidgets.QPushButton, "Icon")
         if menu_button:
-            menu_button.setEnabled(True) 
             try:
                 menu_button.clicked.disconnect()
             except TypeError:
                 pass
             menu_button.clicked.connect(self.toggle_menu)
-        if self.centralWidget():
-            self.centralWidget().deleteLater()
-        self.setCentralWidget(new_central_widget)
+        
         self.centralWidget().installEventFilter(self)
 
     def eventFilter(self, source, event):
