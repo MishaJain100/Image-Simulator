@@ -81,11 +81,11 @@ class AutotuningAndCalibrationLogic(QtWidgets.QMainWindow):
 
         base_img_color = simulator.generate_simulated_image(GT_FOCAL, GT_SENSOR_W, GT_SENSOR_H, GT_DIST, GT_NOISE)
 
-        cv2.imwrite(self.imgs[0], base_img_color)
-        base_img_gray = cv2.imread(self.imgs[0], cv2.IMREAD_GRAYSCALE)
+        cv2.imwrite('base_img.png', base_img_color)
+        base_img_gray = cv2.imread('base_img.png', cv2.IMREAD_GRAYSCALE)
 
         found, ground_truth_points_2d = cv2.findCirclesGrid(
-            base_img_gray, 
+            base_img_gray,
             (7, 7), 
             flags=cv2.CALIB_CB_SYMMETRIC_GRID 
         )
