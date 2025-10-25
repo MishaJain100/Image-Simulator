@@ -42,6 +42,10 @@ class AppWindow(QtWidgets.QMainWindow):
         self.menu_animation.setEasingCurve(QtCore.QEasingCurve.InOutCubic)
         self.menu_frame.raise_()
 
+        self.img = None
+        self.img_display_size = None
+        self.autotuned_params = None
+
     def _create_menu_buttons(self):
         self.menu_layout = QtWidgets.QVBoxLayout(self.menu_frame)
         self.menu_layout.setContentsMargins(10, 50, 10, 10)
@@ -84,27 +88,14 @@ class AppWindow(QtWidgets.QMainWindow):
             self.toggle_menu()
 
     def _switch_ui(self, logic_class):
-        """Creates a controller, extracts its content, and displays it."""
+        if hasattr(logic_class, "__init__") and "img" in logic_class.__init__.__code__.co_varnames:
+            self.current_controller = logic_class(self, img=self.img, img_size=self.img_display_size)
+        else:
+            self.current_controller = logic_class(self)
 
-        # 1. Create an instance of the logic class (e.g., SimulatorControlPanelLogic).
-        #    This fully builds the window in memory.
-        self.current_controller = logic_class(self)
-
-        # 2. Extract its central widget. This is the QWidget that holds all
-        #    your buttons, sliders, etc.
         content_widget = self.current_controller.centralWidget()
-
-        # 3. Re-parent the content widget to the main AppWindow. This is a crucial
-        #    step for proper display and memory management.
         content_widget.setParent(self)
-        
-        # 4. Now, set this extracted QWidget as the central widget of AppWindow.
-        #    This works because you're putting a widget inside a window, which is correct.
         self.setCentralWidget(content_widget)
-
-        # The rest of the logic for finding the menu button can stay the same,
-        # but it now operates on the new central widget.
-        # Note: We access ui elements through self.current_controller.ui
         menu_button = self.centralWidget().findChild(QtWidgets.QPushButton, "Icon")
         if menu_button:
             try:

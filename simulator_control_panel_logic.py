@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 from simulator_control_panel import Ui_MainWindow as Ui_SimulatorControlPanel 
 
 class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
@@ -19,8 +19,14 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
         if file_name:
             print(f"Selected file: {file_name}")
             pixmap = QtGui.QPixmap(file_name)
+            label_size = self.ui.OriginalDefault.size()
+            pixmap = pixmap.scaled(label_size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
             self.ui.OriginalDefault.setPixmap(pixmap)
             self.ui.SimulatedDefault.setPixmap(pixmap)
-            self.ui.OriginalDefault.setScaledContents(True)
+            self.ui.OriginalDefault.setScaledContents(False)
+            self.ui.SimulatedDefault.setScaledContents(False)
+
+            self.parent().img = file_name
+            self.parent().img_display_size = label_size
         else:
             print("No file selected.")

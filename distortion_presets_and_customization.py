@@ -179,7 +179,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.IntensitySlider = QtWidgets.QSlider(self.IntensitySliderPart)
         self.IntensitySlider.setEnabled(True)
-        self.IntensitySlider.setMaximum(100)
+        self.IntensitySlider.setMaximum(500)
         self.IntensitySlider.setSingleStep(1)
         self.IntensitySlider.setOrientation(QtCore.Qt.Horizontal)
         self.IntensitySlider.setObjectName("IntensitySlider")
