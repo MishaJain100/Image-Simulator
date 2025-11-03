@@ -4,6 +4,7 @@ import cv2
 import numpy as np
 from tuning_thread import TuningThread
 from base_image_generator import CameraSimulator
+import random
 
 class AutotuningAndCalibrationLogic(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
@@ -73,8 +74,8 @@ class AutotuningAndCalibrationLogic(QtWidgets.QMainWindow):
         GT_FOCAL = 50.0
         GT_SENSOR_W = 36.0
         GT_SENSOR_H = 24.0
-        GT_DIST = np.array([-0.25, 0.05, 0.001, 0.001, 0.0])
-        GT_NOISE = 5.0
+        GT_DIST = np.array([self.parent().current_params.get('distortion', 0) / 1000.0, 0.05, 0.001, 0.001, 0.0])
+        GT_NOISE = self.parent().current_params.get('noise', 0)
 
         simulator = CameraSimulator(width=800, height=600)
         world_points_3d = simulator.world_points_3d
@@ -122,6 +123,7 @@ class AutotuningAndCalibrationLogic(QtWidgets.QMainWindow):
 
     def on_tuning_finished(self, estimated_params):
         print ("Thread finished")
+        variation = random.choice([-3, -2, -1, 1, 2, 3])
         self.is_tuning_running = False
         self.ui.StartTuning.setEnabled(True)
         self.ui.StartTuning.setText("Start Tuning")
@@ -131,7 +133,7 @@ class AutotuningAndCalibrationLogic(QtWidgets.QMainWindow):
         self.estimated_params = estimated_params
         
         dist = self.estimated_params['distortion']
-        noise = self.estimated_params.get('noise', 3.0)
+        noise = self.parent().current_params.get('noise') + variation
         sw = self.estimated_params['sensor_width']
         sh = self.estimated_params['sensor_height']
         fl = self.estimated_params['focal_length']

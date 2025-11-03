@@ -32,7 +32,6 @@ class AppWindow(QtWidgets.QMainWindow):
         """
         self.setStyleSheet(global_stylesheet)
         self.current_controller = None
-        self._switch_ui(SimulatorControlPanelLogic)
         self.menu_frame = QtWidgets.QFrame(self)
         self.menu_frame.setGeometry(QtCore.QRect(-MENU_WIDTH, 0, MENU_WIDTH, self.height()))
         self.menu_frame.setStyleSheet("background-color: #0f1b23; border-right: 1px solid #1e293b;")
@@ -45,6 +44,18 @@ class AppWindow(QtWidgets.QMainWindow):
         self.img = None
         self.img_display_size = None
         self.autotuned_params = None
+        self.current_params = {
+            'zoom': 0,
+            'fov': 60,
+            'distortion': 0,
+            'brightness': 0,
+            'ld': 45,
+            'shadows': 0,
+            'noise': 0,
+            'exposure': 50
+        }
+
+        self._switch_ui(SimulatorControlPanelLogic)
 
     def _create_menu_buttons(self):
         self.menu_layout = QtWidgets.QVBoxLayout(self.menu_frame)

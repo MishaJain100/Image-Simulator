@@ -117,7 +117,7 @@ class Ui_MainWindow(object):
         self.horizontalLayout_3.setObjectName("horizontalLayout_3")
         self.NoiseLevelSlider = QtWidgets.QSlider(self.NoiseLevelSliderPart)
         self.NoiseLevelSlider.setEnabled(True)
-        self.NoiseLevelSlider.setMaximum(100)
+        self.NoiseLevelSlider.setMaximum(25)
         self.NoiseLevelSlider.setSingleStep(1)
         self.NoiseLevelSlider.setOrientation(QtCore.Qt.Horizontal)
         self.NoiseLevelSlider.setObjectName("NoiseLevelSlider")
