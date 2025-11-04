@@ -5,6 +5,7 @@ from PyQt5.QtGui import QPainter, QBrush, QColor, QPen, QFont
 
 class RangeSlider(QWidget):
     rangeChanged = pyqtSignal(int, int)
+    sliderReleased = pyqtSignal(int, int)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -91,6 +92,7 @@ class RangeSlider(QWidget):
     def mouseReleaseEvent(self, event):
         self._first_handle_pressed = False
         self._second_handle_pressed = False
+        self.sliderReleased.emit(self._lower_value, self._upper_value)
         self.update()
 
     def _value_to_pos(self, value):

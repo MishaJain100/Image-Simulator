@@ -54,9 +54,24 @@ class DistortionPresetsAndCustomizationLogic(QtWidgets.QMainWindow):
         self.ui.Barrel.clicked.connect(self.selection_changed)
         self.ui.Pinpoint.clicked.connect(self.selection_changed)
         self.ui.Nonee.clicked.connect(self.selection_changed)
-        self.ui.IntensitySlider.valueChanged.connect(self.update_distortion)
-        self.ui.CenterXSlider.valueChanged.connect(self.update_distortion)
-        self.ui.CenterYSlider.valueChanged.connect(self.update_distortion)
+        self.ui.IntensitySlider.valueChanged.connect(self.update_intensity)
+        self.ui.IntensitySlider.sliderReleased.connect(self.update_distortion)
+        self.ui.CenterXSlider.valueChanged.connect(self.update_centerx)
+        self.ui.CenterXSlider.sliderReleased.connect(self.update_distortion)
+        self.ui.CenterYSlider.valueChanged.connect(self.update_centery)
+        self.ui.CenterYSlider.sliderReleased.connect(self.update_distortion)
+
+    def update_intensity(self):
+        val = self.ui.IntensitySlider.value()
+        self.ui.IntensityNumber.setText(f'{val / 1000.0}')
+
+    def update_centerx(self):
+        cx = self.ui.CenterXSlider.value()
+        self.ui.CenterXNumber.setText(f'{cx}')
+
+    def update_centery(self):
+        cy = self.ui.CenterYSlider.value()
+        self.ui.CenterYNumber.setText(f'{cy}')
 
     def update_distortion(self):
         if not self.img:
@@ -72,6 +87,8 @@ class DistortionPresetsAndCustomizationLogic(QtWidgets.QMainWindow):
         
         if self.selection == 'None':
             pixmap = QtGui.QPixmap(self.img)
+            label_size = self.ui.OriginalDefault.size()
+            pixmap = pixmap.scaled(label_size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
             self.ui.SimulatedDefault.setPixmap(pixmap)
             return
         elif self.selection == 'Barrel':
@@ -89,14 +106,14 @@ class DistortionPresetsAndCustomizationLogic(QtWidgets.QMainWindow):
         radial = 1 + k1 * r_sq_norm
         map_x = cx + dx * radial
         map_y = cy + dy * radial
-        distorted = cv2.remap(img, map_x.astype(np.float32), map_y.astype(np.float32), 
-                            cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
-        
+        distorted = cv2.remap(img, map_x.astype(np.float32), map_y.astype(np.float32), cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
         distorted_rgb = cv2.cvtColor(distorted, cv2.COLOR_BGR2RGB)
         h, w, ch = distorted_rgb.shape
         bytes_per_line = ch * w
         qt_image = QtGui.QImage(distorted_rgb.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
         pixmap = QtGui.QPixmap.fromImage(qt_image)
+        label_size = self.ui.OriginalDefault.size()
+        pixmap = pixmap.scaled(label_size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
         self.ui.SimulatedDefault.setPixmap(pixmap)
 
     def selection_changed(self):

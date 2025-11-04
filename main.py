@@ -42,6 +42,7 @@ class AppWindow(QtWidgets.QMainWindow):
         self.menu_frame.raise_()
 
         self.img = None
+        self.sim = None
         self.img_display_size = None
         self.autotuned_params = None
         self.current_params = {
@@ -101,6 +102,8 @@ class AppWindow(QtWidgets.QMainWindow):
     def _switch_ui(self, logic_class):
         if hasattr(logic_class, "__init__") and "img" in logic_class.__init__.__code__.co_varnames:
             self.current_controller = logic_class(self, img=self.img, img_size=self.img_display_size)
+        elif hasattr(logic_class, "__init__") and "sim" in logic_class.__init__.__code__.co_varnames:
+            self.current_controller = logic_class(self, sim=self.sim, img_size=self.img_display_size)
         else:
             self.current_controller = logic_class(self)
 

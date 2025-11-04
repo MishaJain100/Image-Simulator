@@ -261,7 +261,7 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
         azimuth = self.ui.LDSlider.value()
         self.ui.LDNumber.setText(f'{azimuth}°')
 
-    def apply_ld(self, img): #Lambertian Reflectance Model
+    def apply_ld(self, img):
         azimuth = self.ui.LDSlider.value()
         self.ui.LDNumber.setText(f'{azimuth}°')
         
@@ -379,6 +379,7 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
 
     def display_image(self, img):
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        self.parent().sim = img_rgb
         h, w, ch = img_rgb.shape
         bytes_per_line = ch * w
         qt_image = QtGui.QImage(img_rgb.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)

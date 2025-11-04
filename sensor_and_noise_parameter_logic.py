@@ -36,16 +36,23 @@ class SensorAndNoiseParameterLogic(QtWidgets.QMainWindow):
 
     def connect_signals(self):
         self.ui.SensorTypeDropDown.currentIndexChanged.connect(self.update_simulation)
-        self.ui.NoiseLevelSlider.valueChanged.connect(self.update_simulation)
-        self.ui.ExposureTimeSlider.valueChanged.connect(self.update_simulation)
-        self.ui.DynamicRangeSlider.rangeChanged.connect(self.update_simulation)
+        self.ui.NoiseLevelSlider.valueChanged.connect(self.noise_val_update)
+        self.ui.NoiseLevelSlider.sliderReleased.connect(self.update_simulation)
+        self.ui.ExposureTimeSlider.valueChanged.connect(self.exposure_time_val_update)
+        self.ui.ExposureTimeSlider.sliderReleased.connect(self.update_simulation)
+        self.ui.DynamicRangeSlider.rangeChanged.connect(self.dynamic_range_val_update)
+        self.ui.DynamicRangeSlider.sliderReleased.connect(self.update_simulation)
+        self.ui.ResolutionDropDown.currentIndexChanged.connect(self.update_simulation)
 
     def update_simulation(self):
         if not self.img:
             return
         
         img = cv2.imread(self.img)
+        img = self.apply_exposure_time(img)
+        img = self.apply_dynamic_range(img)
         img = self.apply_noise(img)
+        img = self.apply_resolution(img)
 
         self.display_image(img)
 
@@ -78,23 +85,58 @@ class SensorAndNoiseParameterLogic(QtWidgets.QMainWindow):
 
         noisy_img = np.clip(noisy_img, 0, 255)
         return noisy_img.astype(np.uint8)
-    
+
+    def apply_exposure_time(self, img):
+        exposure = self.ui.ExposureTimeSlider.value()
+        if exposure == 50:
+            return img
+        if exposure < 50:
+            exposure_factor = 0.1 + (exposure / 50.0) * 0.9
+        else:
+            exposure_factor = 1.0 + ((exposure - 50) / 50.0) * 2.0
+        
+        img_float = img.astype(np.float32) * exposure_factor
+        img_float = np.clip(img_float, 0, 255)
+        return img_float.astype(np.uint8)
+
+    def apply_dynamic_range(self, img):
+        min_val, max_val = self.ui.DynamicRangeSlider.getValues()
+        
+        img_float = img.astype(np.float32)
+        img_float = np.clip(img_float, min_val, max_val)
+        
+        if max_val > min_val:
+            img_float = (img_float - min_val) * (255.0 / (max_val - min_val))
+            
+        img_float = np.clip(img_float, 0, 255)
+        
+        return img_float.astype(np.uint8)
+
+    def apply_resolution(self, img):
+        resolution_text = self.ui.ResolutionDropDown.currentText()
+        
+        parts = resolution_text.split(' x ')
+        target_w = int(parts[0])
+        target_h = int(parts[1])
+
+        if img.shape[1] == target_w and img.shape[0] == target_h:
+            return img
+            
+        resized_img = cv2.resize(img, (target_w, target_h), interpolation=cv2.INTER_LINEAR)
+        return resized_img
+
     def noise_val_update(self):
-        """Lightweight function to update the noise label in real-time."""
         noise_level = self.ui.NoiseLevelSlider.value()
         self.ui.NoiseLevelNumber.setText(f'{noise_level}')
 
     def exposure_time_val_update(self):
-        """Lightweight function to update the exposure label in real-time."""
         exposure_val = self.ui.ExposureTimeSlider.value()
         self.ui.ExposureTimeNumber.setText(f'{exposure_val} ms')
 
     def dynamic_range_val_update(self, min_val, max_val):
-        """Lightweight function to update the dynamic range label in real-time."""
         self.ui.DynamicRangeNumber.setText(f'{min_val} - {max_val}')
 
     def display_image(self, img):
-        """Converts an OpenCV image to QPixmap and displays it."""
         img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
         h, w, ch = img_rgb.shape
         bytes_per_line = ch * w
