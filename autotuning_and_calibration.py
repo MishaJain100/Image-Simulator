@@ -116,6 +116,61 @@ class Ui_MainWindow(object):
         self.ACTextEdit.setObjectName("ACTextEdit")
         self.verticalLayout_7.addWidget(self.ACTextEdit)
         self.verticalLayout_6.addWidget(self.AutotuningAndCalibration)
+        self.BaseUploadImage = QtWidgets.QWidget(self.Parameters)
+        self.BaseUploadImage.setMaximumSize(QtCore.QSize(16777215, 300))
+        self.BaseUploadImage.setStyleSheet("border: 1px solid rgb(55, 65, 81);\n"
+"border-radius: 8px;")
+        self.BaseUploadImage.setObjectName("BaseUploadImage")
+        self.verticalLayoutBase = QtWidgets.QVBoxLayout(self.BaseUploadImage)
+        self.verticalLayoutBase.setContentsMargins(12, 12, 12, 12)
+        self.verticalLayoutBase.setSpacing(12)
+        self.verticalLayoutBase.setObjectName("verticalLayoutBase")
+        self.BaseUploadImageLabel = QtWidgets.QLabel(self.BaseUploadImage)
+        self.BaseUploadImageLabel.setMaximumSize(QtCore.QSize(16777215, 30))
+        self.BaseUploadImageLabel.setStyleSheet("border: None;\n"
+"color: #ffffff;\n"
+"font-size: 16px;\n"
+"font-weight: 600;")
+        self.BaseUploadImageLabel.setFont(space_grotesk)
+        self.BaseUploadImageLabel.setObjectName("BaseUploadImageLabel")
+        self.verticalLayoutBase.addWidget(self.BaseUploadImageLabel)
+        self.BaseUploadWidget = QtWidgets.QWidget(self.BaseUploadImage)
+        self.BaseUploadWidget.setStyleSheet("border: 2px dashed rgb(75, 85, 99);\n"
+"border-radius: 8px;")
+        self.BaseUploadWidget.setObjectName("BaseUploadWidget")
+        self.verticalLayout_3Base = QtWidgets.QVBoxLayout(self.BaseUploadWidget)
+        self.verticalLayout_3Base.setContentsMargins(12, 12, 12, 12)
+        self.verticalLayout_3Base.setSpacing(10)
+        self.verticalLayout_3Base.setObjectName("verticalLayout_3Base")
+        self.BaseUploadIcon = QtWidgets.QPushButton(self.BaseUploadWidget)
+        self.BaseUploadIcon.setStyleSheet("border: None;")
+        self.BaseUploadIcon.setText("")
+        iconBase = QtGui.QIcon()
+        iconBase.addPixmap(QtGui.QPixmap(":/icons/resources/icons/upload_file.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        self.BaseUploadIcon.setIcon(iconBase)
+        self.BaseUploadIcon.setIconSize(QtCore.QSize(50, 50))
+        self.BaseUploadIcon.setObjectName("BaseUploadIcon")
+        self.verticalLayout_3Base.addWidget(self.BaseUploadIcon)
+        self.BaseUploadButton = QtWidgets.QPushButton(self.BaseUploadWidget)
+        self.BaseUploadButton.setStyleSheet("border: None;\n"
+"color: #e5e7eb;\n"
+"font-weight: 500;\n"
+"font-size: 14px;\n"
+"line-height: 20px;\n"
+"margin: 0;")
+        self.BaseUploadButton.setFont(space_grotesk)
+        self.BaseUploadButton.setObjectName("BaseUploadButton")
+        self.verticalLayout_3Base.addWidget(self.BaseUploadButton)
+        self.BaseConstraintsText = QtWidgets.QPushButton(self.BaseUploadWidget)
+        self.BaseConstraintsText.setStyleSheet("border: None;\n"
+"color: rgb(156, 163, 175);\n"
+"font-size: 12px;\n"
+"margin: 0;")
+        self.BaseConstraintsText.setFont(space_grotesk)
+        self.BaseConstraintsText.setObjectName("BaseConstraintsText")
+        self.verticalLayout_3Base.addWidget(self.BaseConstraintsText)
+        self.verticalLayoutBase.addWidget(self.BaseUploadWidget)
+        self.verticalLayout_6.addWidget(self.BaseUploadImage)
         self.UploadImage = QtWidgets.QWidget(self.Parameters)
         self.UploadImage.setMaximumSize(QtCore.QSize(16777215, 300))
         self.UploadImage.setStyleSheet("border: 1px solid rgb(55, 65, 81);\n"
@@ -238,6 +293,9 @@ class Ui_MainWindow(object):
         self.PLExp.setFont(space_grotesk)
         self.PLExp.setObjectName("PLExp")
         self.verticalLayout_5.addWidget(self.PLExp)
+        
+        # === START STYLE MODIFICATION ===
+        # Replaced simple QCheckBoxes with styled toggle widgets
         self.DistortionPL = QtWidgets.QWidget(self.ParameterLock)
         self.DistortionPL.setStyleSheet("border: None;")
         self.DistortionPL.setObjectName("DistortionPL")
@@ -282,49 +340,7 @@ class Ui_MainWindow(object):
         self.DistortionPLCB.setObjectName("DistortionPLCB")
         self.horizontalLayout_3.addWidget(self.DistortionPLCB)
         self.verticalLayout_5.addWidget(self.DistortionPL)
-        self.NoisePL = QtWidgets.QWidget(self.ParameterLock)
-        self.NoisePL.setStyleSheet("border: None;")
-        self.NoisePL.setObjectName("NoisePL")
-        self.horizontalLayout_6 = QtWidgets.QHBoxLayout(self.NoisePL)
-        self.horizontalLayout_6.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout_6.setObjectName("horizontalLayout_6")
-        self.NoisePLLabel = QtWidgets.QLabel(self.NoisePL)
-        self.NoisePLLabel.setStyleSheet("color: #d1d5db;\n"
-"font-size: 14px;\n"
-"")
-        self.NoisePLLabel.setFont(space_grotesk)
-        self.NoisePLLabel.setObjectName("NoisePLLabel")
-        self.horizontalLayout_6.addWidget(self.NoisePLLabel)
-        self.NoisePLCB = QtWidgets.QCheckBox(self.NoisePL)
-        self.NoisePLCB.setMinimumSize(QtCore.QSize(50, 26))
-        self.NoisePLCB.setMaximumSize(QtCore.QSize(50, 26))
-        self.NoisePLCB.setStyleSheet("QCheckBox {\n"
-"    background-color: #4a5568;\n"
-"    border-radius: 13px;\n"
-"}\n"
-"\n"
-"QCheckBox::indicator {\n"
-"    background-color: white;\n"
-"    border-radius: 10px;\n"
-"    width: 20px;\n"
-"    height: 20px;\n"
-"}\n"
-"\n"
-"QCheckBox::indicator:unchecked {\n"
-"    margin-left: 3px;\n"
-"}\n"
-"\n"
-"QCheckBox::indicator:checked {\n"
-"    margin-left: 27px;\n"
-"}\n"
-"\n"
-"QCheckBox:checked {\n"
-"    background-color: #1193d4;\n"
-"}")
-        self.NoisePLCB.setText("")
-        self.NoisePLCB.setObjectName("NoisePLCB")
-        self.horizontalLayout_6.addWidget(self.NoisePLCB)
-        self.verticalLayout_5.addWidget(self.NoisePL)
+        
         self.FLPL = QtWidgets.QWidget(self.ParameterLock)
         self.FLPL.setStyleSheet("border: None;")
         self.FLPL.setObjectName("FLPL")
@@ -368,25 +384,62 @@ class Ui_MainWindow(object):
         self.FLPLCB.setObjectName("FLPLCB")
         self.horizontalLayout_7.addWidget(self.FLPLCB)
         self.verticalLayout_5.addWidget(self.FLPL)
+        # === END STYLE MODIFICATION ===
+
         self.verticalLayout_6.addWidget(self.ParameterLock)
-        self.verticalLayout_6.setStretch(0, 1)
-        self.verticalLayout_6.setStretch(1, 8)
-        self.verticalLayout_6.setStretch(2, 8)
-        self.verticalLayout_6.setStretch(3, 8)
-        self.verticalLayout_2.addWidget(self.Parameters)
+        self.CameraOpticsSimulation = QtWidgets.QWidget(self.Parameters)
+        self.CameraOpticsSimulation.setMaximumSize(QtCore.QSize(16777215, 140))
+        self.CameraOpticsSimulation.setStyleSheet("border: 1px solid rgb(55, 65, 81);\n"
+"border-radius: 8px;\n"
+"background-color: #0f1b23;")
+        self.CameraOpticsSimulation.setObjectName("CameraOpticsSimulation")
+        self.verticalLayout_10 = QtWidgets.QVBoxLayout(self.CameraOpticsSimulation)
+        self.verticalLayout_10.setContentsMargins(12, 12, 12, 12)
+        self.verticalLayout_10.setObjectName("verticalLayout_10")
+        self.COSLabel = QtWidgets.QLabel(self.CameraOpticsSimulation)
+        self.COSLabel.setMaximumSize(QtCore.QSize(16777215, 30))
+        self.COSLabel.setStyleSheet("border: None;\n"
+"color: #ffffff;\n"
+"font-size: 16px;\n"
+"font-weight: 600;")
+        self.COSLabel.setFont(space_grotesk)
+        self.COSLabel.setObjectName("COSLabel")
+        self.verticalLayout_10.addWidget(self.COSLabel)
+        self.COSExp = QtWidgets.QLabel(self.CameraOpticsSimulation)
+        self.COSExp.setMaximumSize(QtCore.QSize(16777215, 30))
+        self.COSExp.setStyleSheet("border: None;\n"
+"color: #9ca3af;\n"
+"font-size: 14px;\n"
+"")
+        self.COSExp.setFont(space_grotesk)
+        self.COSExp.setObjectName("COSExp")
+        self.verticalLayout_10.addWidget(self.COSExp)
+        self.verticalLayout_6.addWidget(self.CameraOpticsSimulation)
+        
+        # === REMOVED RunAutoTuning from left panel ===
+        
         spacerItem = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_2.addItem(spacerItem)
+        self.verticalLayout_6.addItem(spacerItem)
+        self.verticalLayout_2.addWidget(self.Parameters)
+        spacerItem2 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
+        self.verticalLayout_2.addItem(spacerItem2)
+        
+        # === Add stretch factors from old UI ===
         self.verticalLayout_2.setStretch(0, 17)
         self.verticalLayout_2.setStretch(1, 275)
         self.verticalLayout_2.setStretch(2, 68)
+        
         self.horizontalLayout.addWidget(self.Scrollers)
         self.ImageWindow = QtWidgets.QWidget(self.centralwidget)
-        self.ImageWindow.setStyleSheet("background-color: #0f1b23;")
+        self.ImageWindow.setStyleSheet("background-color: #0f1b23;") # Set background
         self.ImageWindow.setObjectName("ImageWindow")
         self.verticalLayout_14 = QtWidgets.QVBoxLayout(self.ImageWindow)
         self.verticalLayout_14.setContentsMargins(0, 0, 0, 0)
         self.verticalLayout_14.setSpacing(0)
         self.verticalLayout_14.setObjectName("verticalLayout_14")
+        
+        # === START STYLE MODIFICATION ===
+        # Added TopRibbon from old UI
         self.TopRibbon = QtWidgets.QWidget(self.ImageWindow)
         self.TopRibbon.setStyleSheet("background-color: #0f1b23;\n"
 "border-left: 0.5px inset #243447;")
@@ -395,14 +448,14 @@ class Ui_MainWindow(object):
         self.horizontalLayout_9.setContentsMargins(-1, 0, -1, 0)
         self.horizontalLayout_9.setSpacing(0)
         self.horizontalLayout_9.setObjectName("horizontalLayout_9")
-        self.CameraOpticsSimulation = QtWidgets.QLabel(self.TopRibbon)
-        self.CameraOpticsSimulation.setStyleSheet("color: white;\n"
+        self.CameraOpticsSimulationLabel = QtWidgets.QLabel(self.TopRibbon)
+        self.CameraOpticsSimulationLabel.setStyleSheet("color: white;\n"
 "font-weight: 700;\n"
 "font-size: 20px;\n"
 "border: None;")
-        self.CameraOpticsSimulation.setFont(space_grotesk)
-        self.CameraOpticsSimulation.setObjectName("CameraOpticsSimulation")
-        self.horizontalLayout_9.addWidget(self.CameraOpticsSimulation)
+        self.CameraOpticsSimulationLabel.setFont(space_grotesk)
+        self.CameraOpticsSimulationLabel.setObjectName("CameraOpticsSimulationLabel")
+        self.horizontalLayout_9.addWidget(self.CameraOpticsSimulationLabel)
         self.ToprightButtons = QtWidgets.QWidget(self.TopRibbon)
         self.ToprightButtons.setStyleSheet("border: None;")
         self.ToprightButtons.setObjectName("ToprightButtons")
@@ -438,34 +491,46 @@ class Ui_MainWindow(object):
         self.horizontalLayout_9.setStretch(0, 10)
         self.horizontalLayout_9.setStretch(1, 1)
         self.verticalLayout_14.addWidget(self.TopRibbon)
+        # === END STYLE MODIFICATION ===
+        
+        
+        # === START LAYOUT MODIFICATION ===
+        # Replaced original simple ImagesWidget with styled layout from old UI
         self.ImagesWidget = QtWidgets.QWidget(self.ImageWindow)
         self.ImagesWidget.setStyleSheet("border-left: 0.5px inset #243447;\n"
 "border-top: 0.5px inset #243447; ")
         self.ImagesWidget.setObjectName("ImagesWidget")
-        self.horizontalLayout_11 = QtWidgets.QHBoxLayout(self.ImagesWidget)
-        self.horizontalLayout_11.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout_11.setObjectName("horizontalLayout_11")
-        self.LeftSpaceWidget = QtWidgets.QWidget(self.ImagesWidget)
-        self.LeftSpaceWidget.setObjectName("LeftSpaceWidget")
-        self.horizontalLayout_11.addWidget(self.LeftSpaceWidget)
-        self.MiddleWidget = QtWidgets.QWidget(self.ImagesWidget)
-        self.MiddleWidget.setStyleSheet("border-left: None;")
-        self.MiddleWidget.setObjectName("MiddleWidget")
-        self.verticalLayout_11 = QtWidgets.QVBoxLayout(self.MiddleWidget)
-        self.verticalLayout_11.setObjectName("verticalLayout_11")
-        self.TopSpaceWidget = QtWidgets.QWidget(self.MiddleWidget)
-        self.TopSpaceWidget.setStyleSheet("border: None;")
-        self.TopSpaceWidget.setObjectName("TopSpaceWidget")
-        self.verticalLayout_11.addWidget(self.TopSpaceWidget)
-        self.RunAutoTuning = QtWidgets.QWidget(self.MiddleWidget)
+        self.horizontalLayout_11_new = QtWidgets.QHBoxLayout(self.ImagesWidget)
+        self.horizontalLayout_11_new.setContentsMargins(0, 0, 0, 0)
+        self.horizontalLayout_11_new.setObjectName("horizontalLayout_11_new")
+        self.LeftSpaceWidget_new = QtWidgets.QWidget(self.ImagesWidget)
+        self.LeftSpaceWidget_new.setObjectName("LeftSpaceWidget_new")
+        self.horizontalLayout_11_new.addWidget(self.LeftSpaceWidget_new)
+        
+        self.MiddleWidget_new = QtWidgets.QWidget(self.ImagesWidget)
+        self.MiddleWidget_new.setStyleSheet("border-left: None;")
+        self.MiddleWidget_new.setObjectName("MiddleWidget_new")
+        
+        self.verticalLayout_11_new = QtWidgets.QVBoxLayout(self.MiddleWidget_new)
+        self.verticalLayout_11_new.setObjectName("verticalLayout_11_new")
+        
+        self.TopSpaceWidget_new = QtWidgets.QWidget(self.MiddleWidget_new)
+        self.TopSpaceWidget_new.setStyleSheet("border: None;")
+        self.TopSpaceWidget_new.setObjectName("TopSpaceWidget_new")
+        self.verticalLayout_11_new.addWidget(self.TopSpaceWidget_new)
+
+        # === START WIDGET CREATION (Moved from left panel) ===
+        self.RunAutoTuning = QtWidgets.QWidget(self.MiddleWidget_new)
         self.RunAutoTuning.setMinimumSize(QtCore.QSize(0, 0))
         self.RunAutoTuning.setMaximumSize(QtCore.QSize(16777215, 175))
         self.RunAutoTuning.setStyleSheet("border: 1px solid rgb(55, 65, 81);\n"
 "border-radius: 8px;\n"
 "background-color: #0f1b23;")
         self.RunAutoTuning.setObjectName("RunAutoTuning")
-        self.verticalLayout_10 = QtWidgets.QVBoxLayout(self.RunAutoTuning)
-        self.verticalLayout_10.setObjectName("verticalLayout_10")
+        self.verticalLayout_11 = QtWidgets.QVBoxLayout(self.RunAutoTuning)
+        self.verticalLayout_11.setObjectName("verticalLayout_11")
+        
+        # Styled RATWidget
         self.RATWidget = QtWidgets.QWidget(self.RunAutoTuning)
         self.RATWidget.setStyleSheet("border: None;")
         self.RATWidget.setObjectName("RATWidget")
@@ -486,7 +551,7 @@ class Ui_MainWindow(object):
 "    color: #ffffff;\n"
 "    font-size: 14px;\n"
 "    font-weight: 600;\n"
-"    padding: 8px 0px;\n"
+"    padding: 8px 16px;\n" # Added padding
 "    border-radius: 4px;\n"
 "    border: none;\n"
 "}\n"
@@ -498,7 +563,7 @@ class Ui_MainWindow(object):
 "QPushButton:pressed {\n"
 "    background-color: #0f84bf;\n"
 "    padding-top: 9px;\n"
-"    padding-left: 1px;\n"
+"    padding-left: 17px;\n" # Adjusted padding
 "}")
         self.StartTuning.setFont(space_grotesk)
         icon6 = QtGui.QIcon()
@@ -506,7 +571,8 @@ class Ui_MainWindow(object):
         self.StartTuning.setIcon(icon6)
         self.StartTuning.setObjectName("StartTuning")
         self.horizontalLayout_10.addWidget(self.StartTuning)
-        self.verticalLayout_10.addWidget(self.RATWidget)
+        self.verticalLayout_11.addWidget(self.RATWidget)
+
         self.Progress = QtWidgets.QWidget(self.RunAutoTuning)
         self.Progress.setMinimumSize(QtCore.QSize(0, 75))
         self.Progress.setMaximumSize(QtCore.QSize(16777215, 200))
@@ -555,9 +621,9 @@ class Ui_MainWindow(object):
         self.ProgressBar.setTextVisible(False)
         self.ProgressBar.setObjectName("ProgressBar")
         self.verticalLayout_8.addWidget(self.ProgressBar)
-        self.verticalLayout_10.addWidget(self.Progress)
-        self.verticalLayout_11.addWidget(self.RunAutoTuning)
-        self.EstimatedParameters = QtWidgets.QWidget(self.MiddleWidget)
+        self.verticalLayout_11.addWidget(self.Progress)
+
+        self.EstimatedParameters = QtWidgets.QWidget(self.MiddleWidget_new)
         self.EstimatedParameters.setMaximumSize(QtCore.QSize(16777215, 16777215))
         self.EstimatedParameters.setStyleSheet("border: 1px solid rgb(55, 65, 81);\n"
 "border-radius: 8px;\n"
@@ -601,33 +667,9 @@ class Ui_MainWindow(object):
         self.DistortionNumber.setObjectName("DistortionNumber")
         self.horizontalLayout_13.addWidget(self.DistortionNumber, 0, QtCore.Qt.AlignRight)
         self.verticalLayout_9.addWidget(self.Distortion)
-        self.Noise = QtWidgets.QWidget(self.EstimatedParameters)
-        self.Noise.setStyleSheet("border-left: None;\n"
-"border-right: None;\n"
-"border-top: None;\n"
-"border-radius: 0px;")
-        self.Noise.setObjectName("Noise")
-        self.horizontalLayout_14 = QtWidgets.QHBoxLayout(self.Noise)
-        self.horizontalLayout_14.setContentsMargins(0, -1, 0, -1)
-        self.horizontalLayout_14.setObjectName("horizontalLayout_14")
-        self.NoiseLabel = QtWidgets.QLabel(self.Noise)
-        self.NoiseLabel.setMaximumSize(QtCore.QSize(16777215, 30))
-        self.NoiseLabel.setStyleSheet("border: None;\n"
-"color: #9ca3af;\n"
-"font-size: 14px;\n"
-"")
-        self.NoiseLabel.setFont(space_grotesk)
-        self.NoiseLabel.setObjectName("NoiseLabel")
-        self.horizontalLayout_14.addWidget(self.NoiseLabel)
-        self.NoiseNumber = QtWidgets.QLabel(self.Noise)
-        self.NoiseNumber.setStyleSheet("border: None;\n"
-"color: #ffffff;\n"
-"font-size: 14px;\n"
-"font-weight: 500;")
-        self.NoiseNumber.setFont(space_grotesk)
-        self.NoiseNumber.setObjectName("NoiseNumber")
-        self.horizontalLayout_14.addWidget(self.NoiseNumber, 0, QtCore.Qt.AlignRight)
-        self.verticalLayout_9.addWidget(self.Noise)
+        
+        # === REMOVED "Noise" WIDGETS ===
+        
         self.FL = QtWidgets.QWidget(self.EstimatedParameters)
         self.FL.setStyleSheet("border-left: None;\n"
 "border-right: None;\n"
@@ -696,24 +738,39 @@ class Ui_MainWindow(object):
         self.ApplyParameters.setIcon(icon7)
         self.ApplyParameters.setObjectName("ApplyParameters")
         self.verticalLayout_9.addWidget(self.ApplyParameters)
-        self.verticalLayout_11.addWidget(self.EstimatedParameters)
+        # === END WIDGET CREATION ===
+
         spacerItem1 = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
-        self.verticalLayout_11.addItem(spacerItem1)
-        self.verticalLayout_11.setStretch(0, 1)
-        self.verticalLayout_11.setStretch(1, 4)
-        self.verticalLayout_11.setStretch(2, 4)
-        self.verticalLayout_11.setStretch(3, 4)
-        self.horizontalLayout_11.addWidget(self.MiddleWidget)
-        self.RightSpaceWidget = QtWidgets.QWidget(self.ImagesWidget)
-        self.RightSpaceWidget.setStyleSheet("border-left: None;")
-        self.RightSpaceWidget.setObjectName("RightSpaceWidget")
-        self.horizontalLayout_11.addWidget(self.RightSpaceWidget)
-        self.horizontalLayout_11.setStretch(0, 1)
-        self.horizontalLayout_11.setStretch(1, 5)
-        self.horizontalLayout_11.setStretch(2, 1)
+        
+        # Add widgets to the new middle layout
+        self.verticalLayout_11_new.addWidget(self.RunAutoTuning)
+        self.verticalLayout_11_new.addWidget(self.EstimatedParameters)
+        self.verticalLayout_11_new.addItem(spacerItem1) # Add back the spacer
+
+        # Add stretch factors from old UI
+        self.verticalLayout_11_new.setStretch(0, 1)
+        self.verticalLayout_11_new.setStretch(1, 4)
+        self.verticalLayout_11_new.setStretch(2, 4)
+        self.verticalLayout_11_new.setStretch(3, 4)
+        
+        self.horizontalLayout_11_new.addWidget(self.MiddleWidget_new)
+        
+        self.RightSpaceWidget_new = QtWidgets.QWidget(self.ImagesWidget)
+        self.RightSpaceWidget_new.setStyleSheet("border-left: None;")
+        self.RightSpaceWidget_new.setObjectName("RightSpaceWidget_new")
+        self.horizontalLayout_11_new.addWidget(self.RightSpaceWidget_new)
+        
+        self.horizontalLayout_11_new.setStretch(0, 1)
+        self.horizontalLayout_11_new.setStretch(1, 5)
+        self.horizontalLayout_11_new.setStretch(2, 1)
+        
         self.verticalLayout_14.addWidget(self.ImagesWidget)
+        
+        # Add stretch factors from old UI
         self.verticalLayout_14.setStretch(0, 8)
         self.verticalLayout_14.setStretch(1, 123)
+        # === END LAYOUT MODIFICATION ===
+
         self.horizontalLayout.addWidget(self.ImageWindow)
         self.horizontalLayout.setStretch(0, 1)
         self.horizontalLayout.setStretch(1, 3)
@@ -732,7 +789,10 @@ class Ui_MainWindow(object):
 "p, li { white-space: pre-wrap; }\n"
 "</style></head><body style=\" font-size:14px; font-weight:600; font-style:normal;\">\n"
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; font-weight:400;\">Fine-tune your simulation parameters.</span></p></body></html>"))
-        self.UploadImageLabel.setText(_translate("MainWindow", "Upload Image"))
+        self.BaseUploadImageLabel.setText(_translate("MainWindow", "Upload Base Image (Clean/Undistorted)"))
+        self.BaseUploadButton.setText(_translate("MainWindow", "Click to upload or drag and drop"))
+        self.BaseConstraintsText.setText(_translate("MainWindow", "SVG, PNG, JPG or GIF (max. 800x400px)"))
+        self.UploadImageLabel.setText(_translate("MainWindow", "Upload Target Image (Modified)"))
         self.UploadButton.setText(_translate("MainWindow", "Click to upload or drag and drop"))
         self.ConstraintsText.setText(_translate("MainWindow", "SVG, PNG, JPG or GIF (max. 800x400px)"))
         self.BatchProcessingLabel.setText(_translate("MainWindow", "Batch Processing"))
@@ -741,23 +801,25 @@ class Ui_MainWindow(object):
         self.PLLabel.setText(_translate("MainWindow", "Parameter Lock"))
         self.PLExp.setText(_translate("MainWindow", "Exclude parameters from auto-tuning."))
         self.DistortionPLLabel.setText(_translate("MainWindow", "Distortion"))
-        self.NoisePLLabel.setText(_translate("MainWindow", "Noise"))
         self.FLPLLabel.setText(_translate("MainWindow", "Focal Length"))
-        self.CameraOpticsSimulation.setText(_translate("MainWindow", "Camera Optics Simulation"))
+        self.COSLabel.setText(_translate("MainWindow", "Camera Optics Simulation"))
+        self.COSExp.setText(_translate("MainWindow", "Simulate optical effects on the image."))
+        
+        # === STYLED WIDGETS TEXT ===
+        self.CameraOpticsSimulationLabel.setText(_translate("MainWindow", "Camera Optics Simulation"))
         self.RATLabel.setText(_translate("MainWindow", "Run Auto-Tuning"))
         self.StartTuning.setText(_translate("MainWindow", "Start Tuning"))
         self.AutoTuningProgress.setText(_translate("MainWindow", "Auto-Tuning Progress"))
         self.ProgressPercent.setText(_translate("MainWindow", "0%"))
         self.EstimatedParametersLabel.setText(_translate("MainWindow", "Estimated Parameters"))
-        self.DistortionLabel.setText(_translate("MainWindow", "Distortion"))
+        self.DistortionLabel.setText(_translate("MainWindow", "Distortion (k1)")) # Updated Label
         self.DistortionNumber.setText(_translate("MainWindow", "0.00"))
-        self.NoiseLabel.setText(_translate("MainWindow", "Noise"))
-        self.NoiseNumber.setText(_translate("MainWindow", "0.00"))
-        self.FLLabel.setText(_translate("MainWindow", "Focal Length"))
-        self.FLNumber.setText(_translate("MainWindow", "0 mm"))
-        self.SSLabel.setText(_translate("MainWindow", "Sensor Size"))
-        self.SSNumber.setText(_translate("MainWindow", "0 mm x 0 mm"))
+        self.FLLabel.setText(_translate("MainWindow", "Focal Length (Scale)")) # Updated Label
+        self.FLNumber.setText(_translate("MainWindow", "1.00"))
+        self.SSLabel.setText(_translate("MainWindow", "Distortion Center"))
+        self.SSNumber.setText(_translate("MainWindow", "0 x 0"))
         self.ApplyParameters.setText(_translate("MainWindow", "Apply Parameters to Simulator"))
+
 import resources_rc
 
 

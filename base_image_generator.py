@@ -2,10 +2,11 @@ import numpy as np
 import cv2
 
 class CameraSimulator:
-    def __init__(self, width=800, height=600, grid_size=7):
+    def __init__(self, width=800, height=600, pattern_size=(7, 7)):
         self.width = width
         self.height = height
-        self.pattern_size = (grid_size, grid_size) 
+        # This now correctly accepts a (rows, cols) tuple
+        self.pattern_size = pattern_size 
         self.square_size_world = 25.0
         self.world_points_3d = self._create_world_grid_points()
 
@@ -29,11 +30,25 @@ class CameraSimulator:
         projected_points_2d, _ = cv2.projectPoints(
             self.world_points_3d, rvec, tvec, K, dist_coeffs
         )
-        img = np.ones((self.height, self.width), dtype=np.uint8) * 255
-        for pt in projected_points_2d:
-            cv2.circle(img, tuple(pt.ravel().astype(int)), 10, (0,), -1, lineType=cv2.LINE_AA)
-        img_float = img.astype(np.float32)
-        noise_array = np.random.normal(0, noise, img_float.shape).astype(np.float32)
-        img_with_noise = img_float + noise_array
-        img_final = np.clip(img_with_noise, 0, 255).astype(np.uint8)
-        return img_final
+        
+        if np.isnan(projected_points_2d).any():
+            return self.create_blank_image(self.height, self.width)
+
+        base_img = self.create_blank_image(self.height, self.width)
+        
+        for p in projected_points_2d:
+            x, y = int(p[0][0]), int(p[0][1])
+            if 0 <= x < self.width and 0 <= y < self.height:
+                cv2.circle(base_img, (x, y), 10, (0, 0, 0), -1)
+
+        # Apply noise if any
+        if noise > 0:
+            noise_val = noise * 25.5 # Scale noise
+            gauss = np.random.normal(0, noise_val, base_img.shape)
+            noisy_img = np.clip(base_img.astype(np.float32) + gauss, 0, 255)
+            base_img = noisy_img.astype(np.uint8)
+
+        return base_img
+
+    def create_blank_image(self, height, width):
+        return np.ones((height, width, 3), dtype=np.uint8) * 255

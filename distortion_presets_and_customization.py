@@ -413,7 +413,7 @@ class Ui_MainWindow(object):
 "<p style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:9pt; font-weight:400;\">Select and adjust distortion types to simulate various lens effects.</span></p></body></html>"))
         self.DistortionType.setText(_translate("MainWindow", "Distortion Type"))
         self.Barrel.setText(_translate("MainWindow", "Barrel"))
-        self.Pinpoint.setText(_translate("MainWindow", "Pinpoint"))
+        self.Pinpoint.setText(_translate("MainWindow", "Pincushion"))
         self.Nonee.setText(_translate("MainWindow", "None"))
         self.IntensityLabel.setText(_translate("MainWindow", "Intensity"))
         self.IntensityNumber.setText(_translate("MainWindow", "0"))
