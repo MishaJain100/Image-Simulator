@@ -2,103 +2,110 @@ import numpy as np
 from PyQt5.QtCore import pyqtSignal, QThread
 import cv2
 from scipy.optimize import minimize
+from base_image_generator import CameraSimulator 
 
 class TuningThread(QThread):
     progress_updated = pyqtSignal(int)
     finished = pyqtSignal(dict)
 
-    def __init__(self, ground_truth_points_2d, world_points_3d, locks, defaults):
+    def __init__(self, target_img_path, locks, defaults):
         super().__init__()
-        self.ground_truth_points_2d = ground_truth_points_2d
-        self.world_points_3d = world_points_3d
+        self.target_img_path = target_img_path
         self.locks = locks
+        self.defaults = defaults
         self.iteration = 0
         self.max_iterations = 100
-        self.defaults = {
-            'focal_length': 35.0,
-            'sensor_width': 36.0,
-            'sensor_height': 24.0,
-            'distortion': np.zeros(5, dtype=np.float32),
-        }
-
-    def _unflatten_params(self, x_flat):
-        return {
-            'focal_length': x_flat[0],
-            'sensor_width': x_flat[1],
-            'sensor_height': x_flat[2],
-            'distortion': x_flat[3:8],
-        }
+        self.simulator = None 
 
     def run(self):
         try:
-            initial_guess_flat = np.concatenate([
-                np.array([
-                    self.defaults['focal_length'],
-                    self.defaults['sensor_width'],
-                    self.defaults['sensor_height']
-                ]),
-                self.defaults['distortion'],
-            ])
-            bounds = [
-                (self.defaults['focal_length'], self.defaults['focal_length']) if self.locks.get('focal_length') else (10.0, 200.0),
-                (self.defaults['sensor_width'], self.defaults['sensor_width']) if self.locks.get('sensor_width') else (self.defaults['sensor_width'], self.defaults['sensor_width']),
-                (self.defaults['sensor_height'], self.defaults['sensor_height']) if self.locks.get('sensor_height') else (self.defaults['sensor_height'], self.defaults['sensor_height']),
-                *[(val, val) if self.locks.get('distortion') else (-0.5, 0.5) for val in self.defaults['distortion']],
-            ]
-            res = minimize(
-                self.objective,
-                initial_guess_flat,
-                method='L-BFGS-B',
-                bounds=bounds,
-                callback=self.callback,
-                options={'maxiter': self.max_iterations, 'iprint': 99, 'ftol': 1e-9, 'eps': 1e-5}
-            )
-            estimated_params = self._unflatten_params(res.x)
-            estimated_params['noise'] = 3.0
-            self.finished.emit(estimated_params)
+            self.target_img = cv2.imread(self.target_img_path)
+
+            self.optim_h, self.optim_w = 64, 85
+            self.target_small = cv2.resize(self.target_img, (self.optim_w, self.optim_h))
+            
+            if len(self.target_small.shape) == 3:
+                self.target_gray = cv2.cvtColor(self.target_small, cv2.COLOR_BGR2GRAY).astype(np.float32)
+            else:
+                self.target_gray = self.target_small.astype(np.float32)
+
+            self.target_blurred = cv2.GaussianBlur(self.target_gray, (21, 21), 0)
+            self.target_std = np.std(self.target_gray)
+
+            h_orig, w_orig = self.target_img.shape[:2]
+            self.simulator = CameraSimulator(width=w_orig, height=h_orig)
+            
+            self.sensor_width = self.defaults.get('sensor_width', 36.0)
+            self.sensor_height = self.defaults.get('sensor_height', 24.0)
+
+            test_focals = [16.0, 24.0, 35.0, 50.0, 85.0, 105.0]
+            best_loss = float('inf')
+            best_start_focal = 50.0
+            
+            for f in test_focals:
+                loss = self.objective([f, 0.0, 10.0])
+                if loss < best_loss:
+                    best_loss = loss
+                    best_start_focal = f
+            
+            print(f"Best Start Focal: {best_start_focal}mm")
+
+            initial_guess = np.array([best_start_focal, 0.0, 10.0])
+            
+            bounds = [(10.0, 150.0), (-0.5, 0.5), (0.0, 50.0)]
+
+            res = minimize(self.objective, initial_guess, method='Nelder-Mead', bounds=bounds, callback=self.callback, options={'maxiter': self.max_iterations, 'xatol': 0.1, 'fatol': 0.1})
+
+            final_focal = float(res.x[0])
+            final_k1 = float(res.x[1])
+            final_noise = float(res.x[2])
+
+            full_dist = np.zeros(5)
+            full_dist[0] = final_k1
+
+            result = {
+                'focal_length': abs(final_focal),
+                'sensor_width': self.sensor_width,
+                'sensor_height': self.sensor_height,
+                'distortion': full_dist,
+                'noise': abs(final_noise),
+                'final_loss': res.fun
+            }
+            
+            self.finished.emit(result)
 
         except Exception as e:
-            print(f"\n!!!!!!!!!! TUNING THREAD CRASHED !!!!!!!!!!")
             import traceback
             traceback.print_exc()
-            error_params = self.defaults.copy()
-            error_params['noise'] = 3.0
-            self.finished.emit(error_params)
+            self.finished.emit({'error': str(e)})
 
+    def objective(self, x):
+        focal_val = abs(x[0])
+        k1_val = x[1]
+        noise_val = abs(x[2])
 
-    def objective(self, x_flat):
-        print(f"Objective called with: {x_flat}")
-        params = self._unflatten_params(x_flat)
-
-        width, height = 800, 600
-        fx = params['focal_length'] * (width / params['sensor_width'])
-        fy = params['focal_length'] * (height / params['sensor_height'])
-        cx = width / 2
-        cy = height / 2
-        K = np.array([[fx, 0, cx], [0, fy, cy], [0, 0, 1]], dtype=np.float32)
-
-        rvec = np.zeros(3, dtype=np.float32)
-        tvec = np.zeros(3, dtype=np.float32)
+        dist_array = np.zeros(5)
+        dist_array[0] = k1_val
         
-        simulated_points_2d, _ = cv2.projectPoints(
-            self.world_points_3d, rvec, tvec, K, params['distortion']
-        )
+        sim_frame = self.simulator.generate_simulated_image(focal_val, self.sensor_width, self.sensor_height, dist_array, noise_val)
         
-        if np.isnan(simulated_points_2d).any():
-            print(f"    Focal: {params['focal_length']:.2f}, SensorW: {params['sensor_width']:.2f}, SensorH: {params['sensor_height']:.2f}")
-            print(f"    Dist: {params['distortion']}")
-            print(f"    Camera Matrix K: \n{K}")
-            return 1e99 
+        sim_small = cv2.resize(sim_frame, (self.optim_w, self.optim_h))
+        
+        if len(sim_small.shape) == 2 or sim_small.shape[2] == 1:
+            sim_gray = sim_small.astype(np.float32)
+        else:
+            sim_gray = cv2.cvtColor(sim_small, cv2.COLOR_BGR2GRAY).astype(np.float32)
 
-        loss = np.mean((self.ground_truth_points_2d - simulated_points_2d)**2)
+        sim_blurred = cv2.GaussianBlur(sim_gray, (21, 21), 0)
+        structure_loss = np.mean(np.abs(self.target_blurred - sim_blurred))
         
-        print(f"    -> Loss: {loss:.6f}")
+        sim_std = np.std(sim_gray)
+        noise_loss = abs(self.target_std - sim_std) * 2.0 
         
-        return loss
-    
+        return structure_loss + noise_loss
+
     def callback(self, xk):
         self.iteration += 1
-        loss = self.objective(xk)
         progress = int((self.iteration / self.max_iterations) * 100)
         self.progress_updated.emit(min(progress, 100))
-        print(f"Iteration {self.iteration}, Loss: {loss:.6f}")
+        print(f"Iter {self.iteration}: F={xk[0]:.2f}, Noise={xk[2]:.2f}")

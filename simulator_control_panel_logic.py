@@ -8,394 +8,362 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
         super().__init__(parent)
         self.ui = Ui_SimulatorControlPanel()
         self.ui.setupUi(self)
+        
+        self.img_path = None
+        self.img_size = None
+        self.map_cache = None
+        self.last_geo_params = None
+        self.thread = None
+
+        self.current_sim = None
+
         self.connect_signals()
 
-        self.img = None
-        self.img_size = None
-        self.set_img(img, img_size)
-        self.set_current_params()
-
-    def set_current_params(self):
-        self.ui.ZoomSlider.setValue(self.parent().current_params['zoom'])
-        self.ui.FOVSlider.setValue(self.parent().current_params['fov'])
-        self.ui.DistortionSlider.setValue(self.parent().current_params['distortion'])
-        self.ui.BrightnessSlider.setValue(self.parent().current_params['brightness'])
-        self.ui.LDSlider.setValue(self.parent().current_params['ld'])
-        self.ui.ShadowsSlider.setValue(self.parent().current_params['shadows'])
-        self.ui.NoiseSlider.setValue(self.parent().current_params['noise'])
-        self.ui.ExposureSlider.setValue(self.parent().current_params['exposure'])
-
-    def reset(self):
-        self.parent().current_params = {
-            'zoom': 0,
-            'fov': 60,
-            'distortion': 0,
-            'brightness': 0,
-            'ld': 45,
-            'shadows': 0,
-            'noise': 0,
-            'exposure': 50
-        }
-        self.ui.ZoomSlider.setValue(0)
-        self.ui.ZoomNumber.setText('0%')
-        self.ui.FOVSlider.setValue(60)
-        self.ui.FOVNumber.setText('60°')
-        self.ui.DistortionSlider.setValue(0)
-        self.ui.DistortionNumber.setText('0.0')
-        self.ui.BrightnessSlider.setValue(0)
-        self.ui.BrightnessNumber.setText('0')
-        self.ui.LDSlider.setValue(45)
-        self.ui.LDNumber.setText('45°')
-        self.ui.ShadowsSlider.setValue(0)
-        self.ui.ShadowsNumber.setText('0')
-        self.ui.NoiseSlider.setValue(0)
-        self.ui.NoiseNumber.setText('0')
-        self.ui.ExposureSlider.setValue(50)
-        self.ui.ExposureNumber.setText('50')
-        self.set_img(self.img, self.img_size)
-
-    def set_img(self, img=None, img_size=None):
-        self.img = img
-        self.img_size = img_size
-        if self.img:
-            pixmap = QtGui.QPixmap(img)
-            
-            if img_size:
-                label_size = img_size
-            else:
-                label_size = self.ui.OriginalDefault.size()
-            
-            pixmap = pixmap.scaled(label_size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
-            self.ui.OriginalDefault.setPixmap(pixmap)
-            self.ui.SimulatedDefault.setPixmap(pixmap)
-            self.ui.OriginalDefault.setScaledContents(False)
-            self.ui.SimulatedDefault.setScaledContents(False)
-            
-            img_data = cv2.imread(img)
-            h, w = img_data.shape[:2]
+        if img:
+            self.img_path = img
+            self.img_size = img_size
+            self.start_processing_thread(img)
+            self.set_current_params()
 
     def connect_signals(self):
         self.ui.UploadButton.clicked.connect(self.upload_image)
         self.ui.UploadIcon.clicked.connect(self.upload_image)
         self.ui.ConstraintsText.clicked.connect(self.upload_image)
-        self.ui.ZoomSlider.valueChanged.connect(self.zoom_val)
-        self.ui.ZoomSlider.sliderReleased.connect(lambda: self.update_simulation('zoom'))
-        self.ui.FOVSlider.valueChanged.connect(self.fov_val)
-        self.ui.FOVSlider.sliderReleased.connect(lambda: self.update_simulation('fov'))
-        self.ui.DistortionSlider.valueChanged.connect(self.distortion_val)
-        self.ui.DistortionSlider.sliderReleased.connect(lambda: self.update_simulation('distortion'))
-        self.ui.BrightnessSlider.valueChanged.connect(self.brightness_val)
-        self.ui.BrightnessSlider.sliderReleased.connect(lambda: self.update_simulation('brightness'))
-        self.ui.LDSlider.valueChanged.connect(self.ld_val)
-        self.ui.LDSlider.sliderReleased.connect(lambda: self.update_simulation('ld'))
-        self.ui.ShadowsSlider.valueChanged.connect(self.shadows_val)
-        self.ui.ShadowsSlider.sliderReleased.connect(lambda: self.update_simulation('shadows'))
-        self.ui.NoiseSlider.valueChanged.connect(self.noise_val)
-        self.ui.NoiseSlider.sliderReleased.connect(lambda: self.update_simulation('noise'))
-        self.ui.ExposureSlider.valueChanged.connect(self.exposure_val)
-        self.ui.ExposureSlider.sliderReleased.connect(lambda: self.update_simulation('exposure'))
-        self.ui.Apply.clicked.connect(self.apply)
         self.ui.Reset.clicked.connect(self.reset)
-        self.ui.ResolutionDropDown.currentIndexChanged.connect(lambda: self.update_simulation('resolution'))
+
+        self.ui.ZoomSlider.valueChanged.connect(lambda v: self.ui.ZoomNumber.setText(f'{v}%'))
+        self.ui.FOVSlider.valueChanged.connect(lambda v: self.ui.FOVNumber.setText(f'{v}°'))
+        self.ui.DistortionSlider.valueChanged.connect(lambda v: self.ui.DistortionNumber.setText(f'{v/1000.0}'))
+        self.ui.BrightnessSlider.valueChanged.connect(lambda v: self.ui.BrightnessNumber.setText(f'{v}'))
+        self.ui.LDSlider.valueChanged.connect(lambda v: self.ui.LDNumber.setText(f'{v}°'))
+        self.ui.ShadowsSlider.valueChanged.connect(lambda v: self.ui.ShadowsNumber.setText(f'{v}'))
+        self.ui.NoiseSlider.valueChanged.connect(lambda v: self.ui.NoiseNumber.setText(f'{v}'))
+        self.ui.ExposureSlider.valueChanged.connect(lambda v: self.ui.ExposureNumber.setText(f'{v}'))
+
+        self.ui.SimulatedDefault.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.ui.SimulatedDefault.customContextMenuRequested.connect(self.show_context_menu)
 
     def upload_image(self):
         options = QtWidgets.QFileDialog.Options()
-        file_name, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select an Image", "", "Images (*.png *.jpg *.jpeg *.svg)", options=options)
+        file_name, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Source", "", "Media (*.png *.jpg *.jpeg *.mp4 *.avi)", options=options)
         if file_name:
-            self.img = file_name
-            print(f"Selected file: {file_name}")
-            pixmap = QtGui.QPixmap(file_name)
-            label_size = self.ui.OriginalDefault.size()
-            pixmap = pixmap.scaled(label_size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
-            self.ui.OriginalDefault.setPixmap(pixmap)
-            self.ui.SimulatedDefault.setPixmap(pixmap)
-            self.ui.OriginalDefault.setScaledContents(False)
-            self.ui.SimulatedDefault.setScaledContents(False)
+            self.img_path = file_name
+            if file_name.lower().endswith(('.png', '.jpg', '.jpeg')):
+                pixmap = QtGui.QPixmap(file_name)
+                label_size = self.ui.OriginalDefault.size()
+                pixmap = pixmap.scaled(label_size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
+                self.ui.OriginalDefault.setPixmap(pixmap)
+            if self.parent():
+                self.parent().img = file_name
+            self.start_processing_thread(file_name)
 
-            self.parent().img = file_name
-            self.parent().img_display_size = label_size
+    def start_processing_thread(self, source):
+        if self.thread is not None:
+            self.thread.stop()
+        
+        self.thread = ProcessingThread(source, self)
+        self.thread.frame_ready.connect(self.update_display_slot)
+        self.thread.start()
+
+    def update_display_slot(self, original_frame, simulated_frame):
+        self.current_sim = simulated_frame
+        h, w, ch = simulated_frame.shape
+        bytes_per_line = ch * w
+        q_sim = QtGui.QImage(simulated_frame.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
+        self.ui.SimulatedDefault.setPixmap(QtGui.QPixmap.fromImage(q_sim))
+
+        h_o, w_o, ch_o = original_frame.shape
+        bytes_per_line_o = ch_o * w_o
+        q_orig = QtGui.QImage(original_frame.data, w_o, h_o, bytes_per_line_o, QtGui.QImage.Format_RGB888)
+        self.ui.OriginalDefault.setPixmap(QtGui.QPixmap.fromImage(q_orig))
+
+    def get_current_params_dict(self):
+        try:
+            if not self.ui.ZoomSlider: 
+                return None
             
-            self.update_simulation('all')
-        else:
-            print("No file selected.")
+            return {
+                'zoom': self.ui.ZoomSlider.value(),
+                'fov': self.ui.FOVSlider.value(),
+                'distortion': self.ui.DistortionSlider.value(),
+                'brightness': self.ui.BrightnessSlider.value(),
+                'ld': self.ui.LDSlider.value(),
+                'shadows': self.ui.ShadowsSlider.value(),
+                'noise': self.ui.NoiseSlider.value(),
+                'exposure': self.ui.ExposureSlider.value(),
+                'res_text': self.ui.ResolutionDropDown.currentText()
+            }
+        except (RuntimeError, AttributeError):
+            return None
 
-    def update_simulation(self, changed_param='all'):
-        if self.img is None:
-            return
+    def process_pipeline(self, frame, params):
+        h, w = frame.shape[:2]
+        display_w = 640
+        display_h = int(h * (display_w / w))
+        frame = cv2.resize(frame, (display_w, display_h))
         
-        img = cv2.imread(self.img)
-        
-        result = self.apply_zoom(img)
-        result = self.apply_fov(result)
-        result = self.apply_distortion(result)
-        result = self.apply_brightness(result)
-        result = self.apply_ld(result)
-        result = self.apply_shadows(result)
-        result = self.apply_noise(result)
-        result = self.apply_exposure(result)
-        result = self.apply_resolution(result)
-        
-        self.display_image(result)
+        original_preview = frame.copy()
 
-    def zoom_val(self):
-        zoom_percent = self.ui.ZoomSlider.value()
-        self.ui.ZoomNumber.setText(f'{zoom_percent}%')
+        frame = self.apply_zoom(frame, params['zoom'])
+        
+        current_geo_key = (params['fov'], params['distortion'], frame.shape[:2])
+        if self.map_cache is None or self.last_geo_params != current_geo_key:
+            self.map_cache = self.compute_geometry_maps(frame, params)
+            self.last_geo_params = current_geo_key
 
-    def apply_zoom(self, img):
-        zoom_percent = self.ui.ZoomSlider.value()
-        self.ui.ZoomNumber.setText(f'{zoom_percent}%')
+        frame = cv2.remap(frame, self.map_cache[0], self.map_cache[1], cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+
+        frame = self.apply_brightness(frame, params['brightness'])
+        frame = self.apply_ld(frame, params['ld'])
+        frame = self.apply_shadows(frame, params['shadows'])
+        frame = self.apply_exposure(frame, params['exposure'])
+        frame = self.apply_noise(frame, params['noise'])
         
-        if zoom_percent == 0:
-            return img
+        frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        original_rgb = cv2.cvtColor(original_preview, cv2.COLOR_BGR2RGB)
         
+        return original_rgb, frame_rgb
+
+    def compute_geometry_maps(self, img, params):
         h, w = img.shape[:2]
-        if zoom_percent > 0:
-            scale = 1.0 + (zoom_percent / 100.0)
-        else:
-            scale = 1.0 + (zoom_percent / 200.0)
         
-        new_w = int(w * scale)
-        new_h = int(h * scale)
-        resized = cv2.resize(img, (new_w, new_h), interpolation=cv2.INTER_LINEAR)
-        
-        if scale > 1.0:
-            start_x = (new_w - w) // 2
-            start_y = (new_h - h) // 2
-            return resized[start_y:start_y + h, start_x:start_x + w]
-        else:
-            zoomed = np.zeros((h, w, img.shape[2]), dtype=img.dtype)
-            start_x = (w - new_w) // 2
-            start_y = (h - new_h) // 2
-            zoomed[start_y:start_y + new_h, start_x:start_x + new_w] = resized
-            return zoomed
-
-    def fov_val(self):
-        fov_degrees = self.ui.FOVSlider.value()
-        self.ui.FOVNumber.setText(f'{fov_degrees}°')
-
-    def apply_fov(self, img):
-        fov_degrees = self.ui.FOVSlider.value()
-        self.ui.FOVNumber.setText(f'{fov_degrees}°')
-        
-        if fov_degrees == 60:
-            return img
-        
-        h, w = img.shape[:2]
+        fov_degrees = params['fov']
         default_fov = 60
         default_focal = (w / 2.0) / np.tan(np.radians(default_fov / 2.0))
-        new_focal = (w / 2.0) / np.tan(np.radians(fov_degrees / 2.0))
         
-        K_default = np.array([
-            [default_focal, 0, w / 2.0],
-            [0, default_focal, h / 2.0],
-            [0, 0, 1]
-        ], dtype=np.float32)
-        
-        K_new = np.array([
-            [new_focal, 0, w / 2.0],
-            [0, new_focal, h / 2.0],
-            [0, 0, 1]
-        ], dtype=np.float32)
+        if fov_degrees == 60:
+            new_focal = default_focal
+        else:
+            new_focal = (w / 2.0) / np.tan(np.radians(fov_degrees / 2.0))
+
+        K_default = np.array([[default_focal, 0, w/2], [0, default_focal, h/2], [0, 0, 1]])
+        K_new = np.array([[new_focal, 0, w/2], [0, new_focal, h/2], [0, 0, 1]])
+
+        k1 = params['distortion'] / 1000.0
         
         map_x, map_y = np.meshgrid(np.arange(w), np.arange(h))
-        pts = np.stack([map_x.ravel(), map_y.ravel(), np.ones(w * h)], axis=0)
+
+        pts = np.stack([map_x.ravel(), map_y.ravel(), np.ones(w*h)], axis=0)
         pts_normalized = np.linalg.inv(K_new) @ pts
+        
+        if k1 != 0:
+            x_norm = pts_normalized[0, :]
+            y_norm = pts_normalized[1, :]
+            r_sq = x_norm**2 + y_norm**2
+            radial = 1 + k1 * r_sq
+            pts_normalized[0, :] = x_norm * radial
+            pts_normalized[1, :] = y_norm * radial
+            
         pts_transformed = K_default @ pts_normalized
         
-        map_x_new = pts_transformed[0, :].reshape(h, w).astype(np.float32)
-        map_y_new = pts_transformed[1, :].reshape(h, w).astype(np.float32)
+        map_x_final = pts_transformed[0, :].reshape(h, w).astype(np.float32)
+        map_y_final = pts_transformed[1, :].reshape(h, w).astype(np.float32)
         
-        return cv2.remap(img, map_x_new, map_y_new, cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+        return map_x_final, map_y_final
 
-    def distortion_val(self):
-        distortion = self.ui.DistortionSlider.value()
-        self.ui.DistortionNumber.setText(f'{distortion / 1000.0}')
-
-    def apply_distortion(self, img):
-        distortion = self.ui.DistortionSlider.value()
-        self.ui.DistortionNumber.setText(f'{distortion / 1000.0}')
-        
-        if distortion == 0:
-            return img
-        
+    def apply_zoom(self, img, zoom_percent):
+        if zoom_percent == 0: return img
         h, w = img.shape[:2]
-        cx, cy = w // 2, h // 2
-        k1 = distortion / 1000.0
+        scale = 1.0 + (zoom_percent / 100.0) if zoom_percent > 0 else 1.0 + (zoom_percent / 200.0)
         
-        map_x, map_y = np.meshgrid(np.arange(w), np.arange(h))
-        dx, dy = map_x - cx, map_y - cy
-        r_sq = dx**2 + dy**2
-        norm_denom = (w/2)**2 + (h/2)**2
-        if norm_denom == 0:
-            norm_denom = 1
-        r_sq_norm = r_sq / norm_denom
-        radial = 1 + k1 * r_sq_norm
-        map_x = cx + dx * radial
-        map_y = cy + dy * radial
-        
-        return cv2.remap(img, map_x.astype(np.float32), map_y.astype(np.float32), cv2.INTER_LINEAR, borderMode=cv2.BORDER_CONSTANT)
+        cx, cy = w/2, h/2
+        M = cv2.getRotationMatrix2D((cx, cy), 0, scale)
+        return cv2.warpAffine(img, M, (w, h))
 
-    def brightness_val(self):
-        brightness = self.ui.BrightnessSlider.value()
-        self.ui.BrightnessNumber.setText(f'{brightness}')
+    def apply_brightness(self, img, val):
+        if val == 0: return img
+        return cv2.convertScaleAbs(img, alpha=1, beta=val*2.55)
 
-    def apply_brightness(self, img):
-        brightness = self.ui.BrightnessSlider.value()
-        self.ui.BrightnessNumber.setText(f'{brightness}')
-        
-        if brightness == 0:
-            return img
-        
-        img_float = img.astype(np.float32)
-
-        if brightness > 0:
-            img_float = img_float + (brightness * 2.55)
-        else:
-            img_float = img_float + (brightness * 2.55)
-        
-        img_float = np.clip(img_float, 0, 255)
-        
-        return img_float.astype(np.uint8)
-
-    def ld_val(self):
-        azimuth = self.ui.LDSlider.value()
-        self.ui.LDNumber.setText(f'{azimuth}°')
-
-    def apply_ld(self, img):
-        azimuth = self.ui.LDSlider.value()
-        self.ui.LDNumber.setText(f'{azimuth}°')
-        
-        if azimuth == 45:
-            return img
-        
+    def apply_ld(self, img, azimuth):
+        if azimuth == 45: return img
         h, w = img.shape[:2]
-        
         azimuth_rad = np.radians(azimuth)
-
-        y_coords = np.linspace(-1, 1, h)
-        x_coords = np.linspace(-1, 1, w)
-        xx, yy = np.meshgrid(x_coords, y_coords)
-
-        light_x = np.cos(azimuth_rad)
-        light_y = np.sin(azimuth_rad)
-
-        alignment = (xx * light_x + yy * light_y) # Sliders angle
-
-        min_intensity = 0.7
-        max_intensity = 1.0
-        intensity = min_intensity + (alignment + 1) / 2 * (max_intensity - min_intensity)
-        intensity = np.clip(intensity, min_intensity, max_intensity)
+        Y, X = np.ogrid[:h, :w]
+        X = (X - w/2) / (w/2)
+        Y = (Y - h/2) / (h/2)
         
-        img_float = img.astype(np.float32)
-        for i in range(3):
-            img_float[:, :, i] = img_float[:, :, i] * intensity
+        light_mask = X * np.cos(azimuth_rad) + Y * np.sin(azimuth_rad)
+        light_mask = (light_mask + 1) / 2 # 0 to 1
+        light_mask = 0.7 + (0.3 * light_mask) # Intensity range
         
-        img_float = np.clip(img_float, 0, 255)
-        return img_float.astype(np.uint8)
+        img = img.astype(np.float32) * light_mask[:, :, np.newaxis]
+        return np.clip(img, 0, 255).astype(np.uint8)
 
-    def shadows_val(self):
-        shadow_intensity = self.ui.ShadowsSlider.value()
-        self.ui.ShadowsNumber.setText(f'{shadow_intensity}')
-
-    def apply_shadows(self, img):
-        shadow_intensity = self.ui.ShadowsSlider.value()
-        self.ui.ShadowsNumber.setText(f'{shadow_intensity}')
-        
-        if shadow_intensity == 0:
-            return img
-        
+    def apply_shadows(self, img, intensity):
+        if intensity == 0: return img
         h, w = img.shape[:2]
+        Y, X = np.ogrid[:h, :w]
+        center_x, center_y = w/2, h/2
+        dist_sq = (X - center_x)**2 + (Y - center_y)**2
+        max_dist_sq = (w/2)**2 + (h/2)**2
+        
+        mask = 1 - (dist_sq / max_dist_sq) * (intensity/100.0)
+        mask = np.clip(mask, 0, 1)
+        
+        img = img.astype(np.float32) * mask[:, :, np.newaxis]
+        return np.clip(img, 0, 255).astype(np.uint8)
 
-        y_gradient = np.linspace(0, 1, h)
-        x_gradient = np.linspace(0, 1, w)
-        xx, yy = np.meshgrid(x_gradient, y_gradient)
-        
-        shadow_mask = 1.0 - ((xx + yy) / 2.0)
-        
-        shadow_strength = shadow_intensity / 100.0
-        shadow_mask = 1.0 - (shadow_mask * shadow_strength * 0.5)
-        shadow_mask = np.clip(shadow_mask, 0.5, 1.0)
-        
-        img_float = img.astype(np.float32)
-        for i in range(3):
-            img_float[:, :, i] = img_float[:, :, i] * shadow_mask
-        
-        img_float = np.clip(img_float, 0, 255)
-        return img_float.astype(np.uint8)
+    def apply_exposure(self, img, val):
+        if val == 50: return img
+        factor = 2 ** ((val - 50) / 25.0)
+        return cv2.convertScaleAbs(img, alpha=factor, beta=0)
 
-    def noise_val(self):
-        noise_level = self.ui.NoiseSlider.value()
-        self.ui.NoiseNumber.setText(f'{noise_level}')
+    def apply_noise(self, img, level):
+        if level == 0: return img
+        row, col, ch = img.shape
+        gauss = np.random.normal(0, level, (row, col, ch))
+        noisy = img.astype(np.float32) + gauss
+        return np.clip(noisy, 0, 255).astype(np.uint8)
+    
+    def reset(self):
+        self.ui.ZoomSlider.setValue(0)
+        self.ui.FOVSlider.setValue(60)
+        self.ui.DistortionSlider.setValue(0)
+        self.ui.BrightnessSlider.setValue(0)
+        self.ui.LDSlider.setValue(45)
+        self.ui.ShadowsSlider.setValue(0)
+        self.ui.NoiseSlider.setValue(0)
+        self.ui.ExposureSlider.setValue(50)
 
-    def apply_noise(self, img):
-        noise_level = self.ui.NoiseSlider.value()
-        self.ui.NoiseNumber.setText(f'{noise_level}')
+    def show_context_menu(self, pos):
+        menu = QtWidgets.QMenu(self)
         
-        if noise_level == 0:
-            return img
-        h, w, c = img.shape
-        mean = 0
-        sigma = noise_level
-        gaussian_noise = np.random.normal(mean, sigma, (h, w, c))
+        save_action = QtWidgets.QAction("Download", self)
+        save_action.triggered.connect(self.save_simulated_image)
+        menu.addAction(save_action)
         
-        noisy_img = img.astype(np.float32) + gaussian_noise
-        noisy_img = np.clip(noisy_img, 0, 255)
-        
-        return noisy_img.astype(np.uint8)
+        menu.exec_(self.ui.SimulatedDefault.mapToGlobal(pos))
 
-    def exposure_val(self):
-        exposure = self.ui.ExposureSlider.value()
-        self.ui.ExposureNumber.setText(f'{exposure}')
+    def save_simulated_image(self):
+        if not self.img_path:
+            QtWidgets.QMessageBox.warning(self, "Error", "No source media loaded!")
+            return
 
-    def apply_exposure(self, img):
-        exposure = self.ui.ExposureSlider.value()
-        self.ui.ExposureNumber.setText(f'{exposure}')
-        
-        if exposure == 50:
-            return img
-        
-        if exposure < 50:
-            exposure_factor = 0.1 + (exposure / 50.0) * 0.9
+        is_video = self.img_path.lower().endswith(('.mp4', '.avi', '.mov', '.mkv'))
+
+        if is_video:
+            self.render_video_output()
         else:
-            exposure_factor = 1.0 + ((exposure - 50) / 50.0) * 2.0
-        
-        img_float = img.astype(np.float32) * exposure_factor
-        img_float = np.clip(img_float, 0, 255)
-        
-        return img_float.astype(np.uint8)
-
-    def apply_resolution(self, img):
-        resolution_text = self.ui.ResolutionDropDown.currentText()
-        
-        parts = resolution_text.split(' x ')
-        target_w = int(parts[0])
-        target_h = int(parts[1])
-
-        if img.shape[1] == target_w and img.shape[0] == target_h:
-            return img
+            if self.current_sim is None: 
+                return
             
-        resized_img = cv2.resize(img, (target_w, target_h), interpolation=cv2.INTER_LINEAR)
-        return resized_img
+            options = QtWidgets.QFileDialog.Options()
+            file_path, _ = QtWidgets.QFileDialog.getSaveFileName(
+                self, "Save Image", "simulated_output.jpg", "Images (*.jpg *.png);;All Files (*)", options=options
+            )
+            
+            if file_path:
+                save_img = cv2.cvtColor(self.current_sim, cv2.COLOR_RGB2BGR)
+                cv2.imwrite(file_path, save_img)
+                QtWidgets.QMessageBox.information(self, "Success", "Image saved successfully!")
 
-    def display_image(self, img):
-        img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        self.parent().sim = img_rgb
-        h, w, ch = img_rgb.shape
-        bytes_per_line = ch * w
-        qt_image = QtGui.QImage(img_rgb.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
-        pixmap = QtGui.QPixmap.fromImage(qt_image)
-        label_size = self.ui.OriginalDefault.size()
-        pixmap = pixmap.scaled(label_size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
-        self.ui.SimulatedDefault.setPixmap(pixmap)
+    def render_video_output(self):
+        options = QtWidgets.QFileDialog.Options()
+        file_path, _ = QtWidgets.QFileDialog.getSaveFileName(self, "Save Video", "simulated_video.mp4", "Video (*.mp4);;All Files (*)", options=options)
 
-    def apply(self):
-        self.parent().current_params = {
-            'zoom': self.ui.ZoomSlider.value(),
-            'fov': self.ui.FOVSlider.value(),
-            'distortion': self.ui.DistortionSlider.value(),
-            'brightness': self.ui.BrightnessSlider.value(),
-            'ld': self.ui.LDSlider.value(),
-            'shadows': self.ui.ShadowsSlider.value(),
-            'noise': self.ui.NoiseSlider.value(),
-            'exposure': self.ui.ExposureSlider.value()
-        }
+        if not file_path:
+            return
+
+        if self.thread:
+            self.thread.stop()
+
+        progress = QtWidgets.QProgressDialog("Rendering video", "Cancel", 0, 100, self)
+        progress.setWindowModality(QtCore.Qt.WindowModal)
+        progress.show()
+
+        try:
+            cap = cv2.VideoCapture(self.img_path)
+            total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            if fps <= 0: fps = 30
+            
+            ret, sample_frame = cap.read()
+            if not ret: raise Exception("Could not read source video")
+            
+            params = self.get_current_params_dict()
+            
+            _, sample_processed = self.process_pipeline(sample_frame, params)
+            h, w = sample_processed.shape[:2]
+            
+            cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+
+            fourcc = cv2.VideoWriter_fourcc(*'mp4v') 
+            writer = cv2.VideoWriter(file_path, fourcc, fps, (w, h))
+
+            frame_idx = 0
+            while True:
+                if progress.wasCanceled():
+                    break
+                    
+                ret, frame = cap.read()
+                if not ret:
+                    break
+                
+                _, processed_rgb = self.process_pipeline(frame, params)
+                
+                processed_bgr = cv2.cvtColor(processed_rgb, cv2.COLOR_RGB2BGR)
+                
+                writer.write(processed_bgr)
+
+                frame_idx += 1
+                progress.setValue(int((frame_idx / total_frames) * 100))
+                QtWidgets.QApplication.processEvents()
+
+            cap.release()
+            writer.release()
+            QtWidgets.QMessageBox.information(self, "Success", "Video rendering complete!")
+
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Error", f"Failed to render video: {str(e)}")
+        
+        finally:
+            self.start_processing_thread(self.img_path)
+
+    def closeEvent(self, event):
+        if self.thread:
+            self.thread.stop()
+        event.accept()
+
+class ProcessingThread(QtCore.QThread):
+    frame_ready = QtCore.pyqtSignal(np.ndarray, np.ndarray)
+
+    def __init__(self, source, logic_ref):
+        super().__init__()
+        self.source = source
+        self.logic = logic_ref
+        self._run_flag = True
+        self.is_video = source.lower().endswith(('.mp4', '.avi', '.mov', '.mkv'))
+
+    def run(self):
+        if self.is_video:
+            cap = cv2.VideoCapture(self.source)
+            while self._run_flag:
+                ret, frame = cap.read()
+                if not ret:
+                    cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
+                    continue
+                
+                params = self.logic.get_current_params_dict()
+                if params is None: 
+                    break
+                
+                original, processed = self.logic.process_pipeline(frame, params)
+                self.frame_ready.emit(original, processed)
+                
+                self.msleep(30) 
+            cap.release()
+        else:
+            frame = cv2.imread(self.source)
+            if frame is not None:
+                while self._run_flag:
+                    params = self.logic.get_current_params_dict()
+                    if params is None: 
+                        break
+
+                    original, processed = self.logic.process_pipeline(frame, params)
+                    self.frame_ready.emit(original, processed)
+                    self.msleep(30)
+
+    def stop(self):
+        self._run_flag = False
+        self.wait()

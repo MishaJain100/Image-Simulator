@@ -100,6 +100,10 @@ class AppWindow(QtWidgets.QMainWindow):
             self.toggle_menu()
 
     def _switch_ui(self, logic_class):
+        if self.current_controller is not None:
+            self.current_controller.close() 
+            self.current_controller.deleteLater()
+
         if hasattr(logic_class, "__init__") and "img" in logic_class.__init__.__code__.co_varnames:
             self.current_controller = logic_class(self, img=self.img, img_size=self.img_display_size)
         elif hasattr(logic_class, "__init__") and "sim" in logic_class.__init__.__code__.co_varnames:
@@ -110,6 +114,7 @@ class AppWindow(QtWidgets.QMainWindow):
         content_widget = self.current_controller.centralWidget()
         content_widget.setParent(self)
         self.setCentralWidget(content_widget)
+        
         menu_button = self.centralWidget().findChild(QtWidgets.QPushButton, "Icon")
         if menu_button:
             try:
