@@ -19,7 +19,6 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
 
         self.connect_signals()
 
-        # Restore previously selected parameters when returning to this panel
         self.set_current_params()
 
         if img:
@@ -96,18 +95,16 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
         bytes_per_line = ch * w
         q_sim = QtGui.QImage(simulated_frame.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
         pixmap_sim = QtGui.QPixmap.fromImage(q_sim)
-        # Scale pixmap to fit label
         label_size = self.ui.SimulatedDefault.size()
         pixmap_sim = pixmap_sim.scaled(label_size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
         self.ui.SimulatedDefault.setPixmap(pixmap_sim)
-        if self.parent() and not self.parent().img_display_size:  # Only set once
+        if self.parent() and not self.parent().img_display_size:
             self.parent().img_display_size = self.ui.SimulatedDefault.size()
 
         h_o, w_o, ch_o = original_frame.shape
         bytes_per_line_o = ch_o * w_o
         q_orig = QtGui.QImage(original_frame.data, w_o, h_o, bytes_per_line_o, QtGui.QImage.Format_RGB888)
         pixmap_orig = QtGui.QPixmap.fromImage(q_orig)
-        # Scale pixmap to fit label
         label_size = self.ui.OriginalDefault.size()
         pixmap_orig = pixmap_orig.scaled(label_size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
         self.ui.OriginalDefault.setPixmap(pixmap_orig)
