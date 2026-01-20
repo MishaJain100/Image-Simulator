@@ -105,6 +105,7 @@ class AutotuningAndCalibrationLogic(QtWidgets.QMainWindow):
 
     def on_tuning_progress(self, value):
         self.ui.ProgressBar.setValue(value)
+        self.ui.ProgressPercent.setText(f'{value}%')
 
     def on_tuning_finished(self, estimated_params):
         print("Tuning Thread finished")
