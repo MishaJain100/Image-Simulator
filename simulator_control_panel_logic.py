@@ -40,7 +40,7 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
         self.ui.ShadowsSlider.valueChanged.connect(lambda v: self.ui.ShadowsNumber.setText(f'{v}'))
         self.ui.NoiseSlider.valueChanged.connect(lambda v: self.ui.NoiseNumber.setText(f'{v}'))
         self.ui.ExposureSlider.valueChanged.connect(lambda v: self.ui.ExposureNumber.setText(f'{v}'))
-        self.ui.ResolutionDropDown.currentIndexChanged.connect(self.on_resolution_changed)  # ADD THIS LINE
+        self.ui.ResolutionDropDown.currentIndexChanged.connect(self.on_resolution_changed) 
 
         self.ui.SimulatedDefault.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.ui.SimulatedDefault.customContextMenuRequested.connect(self.show_context_menu)
@@ -71,14 +71,19 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
         file_name, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Source", "", "Media (*.png *.jpg *.jpeg *.mp4 *.avi)", options=options)
         if file_name:
             self.img_path = file_name
+            
+            if self.parent():
+                self.parent().img = file_name
+
             if file_name.lower().endswith(('.png', '.jpg', '.jpeg')):
                 pixmap = QtGui.QPixmap(file_name)
                 label_size = self.ui.OriginalDefault.size()
                 pixmap = pixmap.scaled(label_size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
                 self.ui.OriginalDefault.setPixmap(pixmap)
-            if self.parent():
-                self.parent().img_display_size = pixmap.size()
-                self.parent().img = file_name
+                
+                if self.parent():
+                    self.parent().img_display_size = pixmap.size()
+
             self.start_processing_thread(file_name)
 
     def start_processing_thread(self, source):
@@ -95,9 +100,11 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
         bytes_per_line = ch * w
         q_sim = QtGui.QImage(simulated_frame.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
         pixmap_sim = QtGui.QPixmap.fromImage(q_sim)
+        
         label_size = self.ui.SimulatedDefault.size()
         pixmap_sim = pixmap_sim.scaled(label_size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
         self.ui.SimulatedDefault.setPixmap(pixmap_sim)
+        
         if self.parent() and not self.parent().img_display_size:
             self.parent().img_display_size = self.ui.SimulatedDefault.size()
 
@@ -105,6 +112,7 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
         bytes_per_line_o = ch_o * w_o
         q_orig = QtGui.QImage(original_frame.data, w_o, h_o, bytes_per_line_o, QtGui.QImage.Format_RGB888)
         pixmap_orig = QtGui.QPixmap.fromImage(q_orig)
+        
         label_size = self.ui.OriginalDefault.size()
         pixmap_orig = pixmap_orig.scaled(label_size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
         self.ui.OriginalDefault.setPixmap(pixmap_orig)
@@ -130,9 +138,13 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
 
     def process_pipeline(self, frame, params):
         h, w = frame.shape[:2]
-        display_w = 640
-        display_h = int(h * (display_w / w))
-        frame = cv2.resize(frame, (display_w, display_h))
+        
+        target_w = 1280 
+        
+        if w > target_w:
+            display_w = target_w
+            display_h = int(h * (display_w / w))
+            frame = cv2.resize(frame, (display_w, display_h), interpolation=cv2.INTER_AREA)
         
         original_preview = frame.copy()
 
@@ -150,7 +162,6 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
         frame = self.apply_shadows(frame, params['shadows'])
         frame = self.apply_exposure(frame, params['exposure'])
         frame = self.apply_noise(frame, params['noise'])
-        frame = self.apply_resolution(frame)
         
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         original_rgb = cv2.cvtColor(original_preview, cv2.COLOR_BGR2RGB)
@@ -247,19 +258,6 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
         gauss = np.random.normal(0, level, (row, col, ch))
         noisy = img.astype(np.float32) + gauss
         return np.clip(noisy, 0, 255).astype(np.uint8)
-    
-    def apply_resolution(self, img):
-        resolution_text = self.ui.ResolutionDropDown.currentText()
-        
-        parts = resolution_text.split(' x ')
-        target_w = int(parts[0])
-        target_h = int(parts[1])
-
-        if img.shape[1] == target_w and img.shape[0] == target_h:
-            return img
-            
-        resized_img = cv2.resize(img, (target_w, target_h), interpolation=cv2.INTER_LINEAR)
-        return resized_img
     
     def reset(self):
         self.ui.ZoomSlider.setValue(0)

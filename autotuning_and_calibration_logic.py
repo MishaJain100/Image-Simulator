@@ -47,7 +47,7 @@ class AutotuningAndCalibrationLogic(QtWidgets.QMainWindow):
 
     def upload_image(self):
         options = QtWidgets.QFileDialog.Options()
-        file_name, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select an Image", "", "Images (*.png *.jpg *.jpeg *.svg)", options=options)
+        file_name, _ = QtWidgets.QFileDialog.getOpenFileName(self, "Select Source", "", "Media (*.png *.jpg *.jpeg *.svg *.mp4 *.avi *.mov *.mkv)",options=options)
         if file_name:
             print(f"Selected file: {file_name}")
             self.ui.UploadButton.setText(file_name.split('/')[-1])
@@ -58,26 +58,34 @@ class AutotuningAndCalibrationLogic(QtWidgets.QMainWindow):
 
     def load_batch_images(self):
         options = QtWidgets.QFileDialog.Options()
-        files, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select Batch Images", "", "Images (*.png *.jpg *.jpeg *.svg)", options=options)
+        files, _ = QtWidgets.QFileDialog.getOpenFileNames(self, "Select Batch Media", "", "Media (*.png *.jpg *.jpeg *.svg *.mp4 *.avi *.mov *.mkv)", options=options)
         if files:
             self.imgs = files
-            self.ui.SelectImages.setText(f"{len(files)} images selected")
+            self.ui.SelectImages.setText(f"{len(files)} files selected")
             self.ui.UploadButton.setText(files[0].split('/')[-1])
 
     def start_tuning(self):
         if self.tuning_thread and self.tuning_thread.isRunning(): 
             return
 
-        target_image_path = None
-        
+        source_path = None
         if self.parent() and hasattr(self.parent(), 'img') and self.parent().img:
-            target_image_path = self.parent().img
-        elif self.imgs and len(self.imgs) > 0:
-            target_image_path = self.imgs[0]
+            source_path = self.parent().img
             
-        if not target_image_path:
-            QtWidgets.QMessageBox.warning(self, "No Image", "Please upload an image in the Simulator Control Panel (Tab 1) first.")
+        if not source_path:
+            QtWidgets.QMessageBox.warning(self, "No Source", "Please upload a clean Source Image in the Simulator Control Panel (Tab 1) first.")
             return
+
+        target_path = None
+        if self.imgs and len(self.imgs) > 0:
+            target_path = self.imgs[0]
+            
+        if not target_path:
+            QtWidgets.QMessageBox.warning(self, "No Target", "Please upload the Distorted/Simulated Image in this tab to tune against.")
+            return
+
+        print(f"Tuning Source: {source_path}")
+        print(f"Tuning Target: {target_path}")
 
         locks = {
             'distortion': self.ui.DistortionPLCB.isChecked(),
@@ -98,7 +106,7 @@ class AutotuningAndCalibrationLogic(QtWidgets.QMainWindow):
         self.ui.StartTuning.setText("Tuning...")
         self.ui.ProgressBar.setValue(0)
         
-        self.tuning_thread = TuningThread(target_image_path, locks, defaults)
+        self.tuning_thread = TuningThread(source_path, target_path, locks, defaults)
         self.tuning_thread.progress_updated.connect(self.on_tuning_progress)
         self.tuning_thread.finished.connect(self.on_tuning_finished)
         self.tuning_thread.start()
