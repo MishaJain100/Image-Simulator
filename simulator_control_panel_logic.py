@@ -19,11 +19,13 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
 
         self.connect_signals()
 
+        # Restore previously selected parameters when returning to this panel
+        self.set_current_params()
+
         if img:
             self.img_path = img
             self.img_size = img_size
             self.start_processing_thread(img)
-            self.set_current_params()
 
     def connect_signals(self):
         self.ui.UploadButton.clicked.connect(self.upload_image)
@@ -39,9 +41,31 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
         self.ui.ShadowsSlider.valueChanged.connect(lambda v: self.ui.ShadowsNumber.setText(f'{v}'))
         self.ui.NoiseSlider.valueChanged.connect(lambda v: self.ui.NoiseNumber.setText(f'{v}'))
         self.ui.ExposureSlider.valueChanged.connect(lambda v: self.ui.ExposureNumber.setText(f'{v}'))
+        self.ui.ResolutionDropDown.currentIndexChanged.connect(self.on_resolution_changed)  # ADD THIS LINE
 
         self.ui.SimulatedDefault.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.ui.SimulatedDefault.customContextMenuRequested.connect(self.show_context_menu)
+
+    def on_resolution_changed(self):
+        if self.img_path:
+            self.start_processing_thread(self.img_path)
+
+    def set_current_params(self):
+        parent_params = None
+        if self.parent() and hasattr(self.parent(), 'current_params'):
+            parent_params = self.parent().current_params
+
+        if not parent_params:
+            return
+
+        self.ui.ZoomSlider.setValue(parent_params.get('zoom', 0))
+        self.ui.FOVSlider.setValue(parent_params.get('fov', 60))
+        self.ui.DistortionSlider.setValue(parent_params.get('distortion', 0))
+        self.ui.BrightnessSlider.setValue(parent_params.get('brightness', 0))
+        self.ui.LDSlider.setValue(parent_params.get('ld', 45))
+        self.ui.ShadowsSlider.setValue(parent_params.get('shadows', 0))
+        self.ui.NoiseSlider.setValue(parent_params.get('noise', 0))
+        self.ui.ExposureSlider.setValue(parent_params.get('exposure', 50))
 
     def upload_image(self):
         options = QtWidgets.QFileDialog.Options()
@@ -54,6 +78,7 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
                 pixmap = pixmap.scaled(label_size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
                 self.ui.OriginalDefault.setPixmap(pixmap)
             if self.parent():
+                self.parent().img_display_size = pixmap.size()
                 self.parent().img = file_name
             self.start_processing_thread(file_name)
 
@@ -70,12 +95,22 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
         h, w, ch = simulated_frame.shape
         bytes_per_line = ch * w
         q_sim = QtGui.QImage(simulated_frame.data, w, h, bytes_per_line, QtGui.QImage.Format_RGB888)
-        self.ui.SimulatedDefault.setPixmap(QtGui.QPixmap.fromImage(q_sim))
+        pixmap_sim = QtGui.QPixmap.fromImage(q_sim)
+        # Scale pixmap to fit label
+        label_size = self.ui.SimulatedDefault.size()
+        pixmap_sim = pixmap_sim.scaled(label_size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
+        self.ui.SimulatedDefault.setPixmap(pixmap_sim)
+        if self.parent() and not self.parent().img_display_size:  # Only set once
+            self.parent().img_display_size = self.ui.SimulatedDefault.size()
 
         h_o, w_o, ch_o = original_frame.shape
         bytes_per_line_o = ch_o * w_o
         q_orig = QtGui.QImage(original_frame.data, w_o, h_o, bytes_per_line_o, QtGui.QImage.Format_RGB888)
-        self.ui.OriginalDefault.setPixmap(QtGui.QPixmap.fromImage(q_orig))
+        pixmap_orig = QtGui.QPixmap.fromImage(q_orig)
+        # Scale pixmap to fit label
+        label_size = self.ui.OriginalDefault.size()
+        pixmap_orig = pixmap_orig.scaled(label_size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.FastTransformation)
+        self.ui.OriginalDefault.setPixmap(pixmap_orig)
 
     def get_current_params_dict(self):
         try:
@@ -118,6 +153,7 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
         frame = self.apply_shadows(frame, params['shadows'])
         frame = self.apply_exposure(frame, params['exposure'])
         frame = self.apply_noise(frame, params['noise'])
+        frame = self.apply_resolution(frame)
         
         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         original_rgb = cv2.cvtColor(original_preview, cv2.COLOR_BGR2RGB)
@@ -214,6 +250,19 @@ class SimulatorControlPanelLogic(QtWidgets.QMainWindow):
         gauss = np.random.normal(0, level, (row, col, ch))
         noisy = img.astype(np.float32) + gauss
         return np.clip(noisy, 0, 255).astype(np.uint8)
+    
+    def apply_resolution(self, img):
+        resolution_text = self.ui.ResolutionDropDown.currentText()
+        
+        parts = resolution_text.split(' x ')
+        target_w = int(parts[0])
+        target_h = int(parts[1])
+
+        if img.shape[1] == target_w and img.shape[0] == target_h:
+            return img
+            
+        resized_img = cv2.resize(img, (target_w, target_h), interpolation=cv2.INTER_LINEAR)
+        return resized_img
     
     def reset(self):
         self.ui.ZoomSlider.setValue(0)

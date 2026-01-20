@@ -17,11 +17,14 @@ class DistortionPresetsAndCustomizationLogic(QtWidgets.QMainWindow):
         self.img = img
         if self.img:
             pixmap = QtGui.QPixmap(img)
-            
-            if img_size:
+            # NEW: Check parent for stored size first
+            if img_size is None and self.parent() and self.parent().img_display_size:
+                label_size = self.parent().img_display_size
+            elif img_size:
                 label_size = img_size
             else:
                 label_size = self.ui.OriginalDefault.size()
+        
             
             pixmap = pixmap.scaled(label_size, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation)
             self.ui.OriginalDefault.setPixmap(pixmap)
@@ -123,3 +126,4 @@ class DistortionPresetsAndCustomizationLogic(QtWidgets.QMainWindow):
             self.selection = 'Pinpoint'
         else:
             self.selection = 'None'
+        self.update_distortion() 

@@ -23,6 +23,8 @@ class ComparisonAndMetricsDisplayLogic(QtWidgets.QMainWindow):
             pixmap = QtGui.QPixmap.fromImage(qt_image)
             if self.img_size:
                 label_size = self.img_size
+            elif self.parent() and hasattr(self.parent(), 'img_display_size') and self.parent().img_display_size:
+                label_size = self.parent().img_display_size
             else:
                 label_size = self.ui.SimulatedImageImage.size() 
             
